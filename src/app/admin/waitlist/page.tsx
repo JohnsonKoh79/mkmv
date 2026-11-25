@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { connection } from "next/server";
 import { AdminShell, btn } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
@@ -13,7 +14,7 @@ async function Content() {
       {data.map((w) => (
         <li key={w.id} className="border border-ink p-3 flex justify-between gap-3">
           <span className="text-sm"><b>{w.name}</b>{w.job ? ` · ${w.job}` : ""}<br />Referred by {w.referred_by}{w.reason ? <><br />{w.reason}</> : null}</span>
-          <form action={dismissWaitlist.bind(null, w.id)}><button className={btn}>Remove</button></form>
+          <form action={dismissWaitlist.bind(null, w.id)}><SubmitButton className={btn}>Remove</SubmitButton></form>
         </li>
       ))}
     </ul>

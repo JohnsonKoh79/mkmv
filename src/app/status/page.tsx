@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -75,7 +76,7 @@ async function StatusContent() {
           </Link>
         )}
         <form action={signOut} className="mt-6">
-          <button className="min-h-11 underline uppercase text-xs font-bold tracking-widest">Sign out</button>
+          <SubmitButton className="min-h-11 underline uppercase text-xs font-bold tracking-widest" pendingLabel="Signing out…">Sign out</SubmitButton>
         </form>
       </main>
     </>

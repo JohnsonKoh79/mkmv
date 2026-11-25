@@ -11,7 +11,7 @@ Read `docs/MKMV_Website_Build_Prompt.md` in full before writing any code. It is 
 - `docs/MKMV_Website_Build_Prompt.md`: the build brief.
 - `docs/MKMV_Build_Handover.md`: what the first version already does. Section 12 of the build brief says what to change in it.
 - `brand/MKMV_Brand_Guideline.md`: colours, logo use, wording and the kit image prompt.
-- `brand/kit/`: blank garment images (`socks.png`, `singlet.png`, `pants.png`) once the owner supplies them.
+- `public/kit/`: finished kit artwork as transparent PNGs, named `<piece>-<core|reserved>[-m|-w].png`. They already carry the logo, "12W · 5AM" and the twelve marks, so nothing is overlaid on them. `src/components/Ladder.tsx` uses them.
 - `docs/MKMV_Plan_ZH.pdf`: the season-one plan in Traditional Chinese, for background only.
 - `brand/logo/`: the MKMV wordmark as transparent SVGs, stacked and horizontal, in black (`#10100F`), off-white (`#EAE4DE`) and oxblood (`#522E2C`). Use these files; never retype the wordmark.
 - `brand/MKMV_Logo.pdf`: the original logo artwork.

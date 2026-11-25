@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 export function SignInForm() {
@@ -11,16 +11,22 @@ export function SignInForm() {
       : "",
   );
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false); // stops a second tap before the screen updates
 
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (lock.current) return;
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return setMsg("Sign-in opens soon.");
+    lock.current = true; setBusy(true); setMsg("");
     const { error } = await supabaseBrowser().auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${location.origin}/auth/callback`, shouldCreateUser: true },
     });
+    setBusy(false);
     if (error) {
+      lock.current = false;
       const limited = error.status === 429 || /rate limit|seconds/i.test(error.message);
       return setMsg(limited ? "Slow down. Too many emails. Wait an hour, then try once." : `Link did not send. (${error.message})`);
     }
@@ -37,7 +43,7 @@ export function SignInForm() {
             <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
               className="w-full min-h-11 border border-ink bg-offwhite px-3 py-2 text-base" />
             {msg && <p role="alert" className="border border-ink p-3">{msg}</p>}
-            <button className="min-h-11 px-6 bg-ink text-offwhite uppercase text-sm font-bold tracking-wide">Send link</button>
+            <button disabled={busy} aria-busy={busy} className="min-h-12 px-6 bg-ink text-offwhite uppercase text-sm font-bold tracking-wide disabled:opacity-50">{busy ? "Sending…" : "Send link"}</button>
           </form>
         )}
     </>

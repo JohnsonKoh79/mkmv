@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
@@ -24,7 +25,7 @@ async function UnlockContent() {
         <p className="mt-6 text-lg">{note}</p>
       </div>
       <form action={markUnlockSeen.bind(null, step.id)}>
-        <button className={`w-full min-h-14 border uppercase text-sm font-bold tracking-wide ${ox ? "border-oxblood" : "border-offwhite"}`}>Continue</button>
+        <SubmitButton className={`w-full min-h-14 border uppercase text-sm font-bold tracking-wide ${ox ? "border-oxblood" : "border-offwhite"}`}>Continue</SubmitButton>
       </form>
     </main>
   );

@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/app/actions";
@@ -29,7 +30,7 @@ async function Nav() {
   return (
     <nav className="flex items-center gap-1 text-sm uppercase tracking-wide font-bold">
       {founder && <Link href="/admin" className={`${item} border border-ink`}>Admin</Link>}
-      <form action={signOut}><button className={item}>Sign out</button></form>
+      <form action={signOut}><SubmitButton className={item} pendingLabel="Signing out…">Sign out</SubmitButton></form>
     </nav>
   );
 }

@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { connection } from "next/server";
 import { AdminShell, H, btnDark } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
@@ -38,7 +39,7 @@ async function Content() {
             <span className="text-sm">{o.who}<br />{o.piece} · {o.size} · RM {o.price.toFixed(2)}<br />
               <span className="uppercase text-xs tracking-widest">Ref {o.id.slice(0, 6).toUpperCase()} · {LABEL[o.status]}</span></span>
             {BUTTON[o.status] && (
-              <form action={advanceOrder.bind(null, o.id, o.status)}><button className={btnDark}>{BUTTON[o.status]}</button></form>
+              <form action={advanceOrder.bind(null, o.id, o.status)}><SubmitButton className={btnDark}>{BUTTON[o.status]}</SubmitButton></form>
             )}
           </li>
         ))}

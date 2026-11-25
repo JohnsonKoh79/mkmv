@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { connection } from "next/server";
 import { AdminShell, H, field, btnDark } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
@@ -22,7 +23,7 @@ async function Content() {
       <H>Payment instructions</H>
       <form action={savePayment} className="space-y-3">
         <textarea name="value" rows={4} defaultValue={pay?.value ?? ""} className={field} aria-label="Payment instructions" />
-        <button className={btnDark}>Save</button>
+        <SubmitButton className={btnDark} pendingLabel="Saving…">Save</SubmitButton>
       </form>
 
       <H>Products and sizes</H>
@@ -32,7 +33,7 @@ async function Content() {
             <form action={saveProduct.bind(null, p.id)} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
               <div><label className={label}>Name</label><input name="name" defaultValue={p.name} className={field} /></div>
               <div><label className={label}>Sizes, comma separated</label><input name="sizes" defaultValue={(p.sizes as string[]).join(", ")} className={field} /></div>
-              <button className={btnDark}>Save</button>
+              <SubmitButton className={btnDark} pendingLabel="Saving…">Save</SubmitButton>
             </form>
           </li>
         ))}
@@ -45,7 +46,7 @@ async function Content() {
             <form action={savePrice.bind(null, s.id)} className="grid grid-cols-[1fr_8rem_auto] gap-2 items-end">
               <span className="text-sm pb-3">LV {s.level_required} · {(s.product as unknown as { name: string }).name} · {s.ink}</span>
               <input name="price" type="number" step="0.01" min="0" inputMode="decimal" defaultValue={s.price ?? ""} aria-label="Price" className={field} />
-              <button className={btnDark}>Save</button>
+              <SubmitButton className={btnDark} pendingLabel="Saving…">Save</SubmitButton>
             </form>
           </li>
         ))}
@@ -59,7 +60,7 @@ async function Content() {
         <div><label className={label} htmlFor="referrer">Referrer</label>
           <select id="referrer" name="referrer" className={field}><option value="">None</option>
             {people.map((p) => <option key={p.id} value={p.id}>{p.nickname ?? p.real_name}</option>)}</select></div>
-        <button className={btnDark}>Add and enrol</button>
+        <SubmitButton className={btnDark} pendingLabel="Adding…">Add and enrol</SubmitButton>
       </form>
 
       <H>Players ({people.length} of 12)</H>

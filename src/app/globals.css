@@ -29,3 +29,12 @@ body {
 .slant { display: inline-block; transform: skewX(-5deg); }
 
 :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Panels wipe in along the 5-degree angle. Under 600ms, and off for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .wipe { animation: wipe 360ms ease-out backwards; }
+}
+@keyframes wipe {
+  from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+  to { clip-path: polygon(0 0, 110% 0, 101% 100%, 0 100%); }
+}

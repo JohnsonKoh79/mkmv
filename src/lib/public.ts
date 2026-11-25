@@ -11,6 +11,8 @@ export interface PublicProject {
   id: string; name: string; descriptor: string; status: "upcoming" | "ongoing" | "finished";
   seasonId: string | null; sessionsRequired: number; dates: string[]; startDate: string | null;
   ladder: LadderStep[]; players: PublicPlayer[]; // players are in join order. Never sorted by level.
+  showed: Record<string, number>; // date -> players who logged a session
+  finishers: number;
 }
 
 const client = () =>
@@ -25,7 +27,7 @@ export function weekLabel(p: PublicProject, today = klToday()): string {
 
 export async function getPublic(): Promise<PublicProject[]> {
   const db = client();
-  const [projects, seasons, dates, steps, roster, people, levels] = await Promise.all([
+  const [projects, seasons, dates, steps, roster, people, levels, weeks, finishers] = await Promise.all([
     db.from("project").select("id, name, descriptor, status"),
     db.from("season").select("id, project_id, start_date, sessions_required").order("start_date", { ascending: false }),
     db.from("session_date").select("season_id, date").order("date"),
@@ -33,6 +35,8 @@ export async function getPublic(): Promise<PublicProject[]> {
     db.from("public_roster").select("player_id, season_id, joined_at").order("joined_at").order("player_id"),
     db.from("public_player").select("id, nickname, photo_url"),
     db.from("public_level").select("player_id, season_id, level"),
+    db.from("public_week").select("season_id, date, showed"),
+    db.from("public_season_finishers").select("season_id, finishers"),
   ]);
   const person = new Map((people.data ?? []).map((p) => [p.id as string, p]));
   const lvl = new Map((levels.data ?? []).map((l) => [`${l.player_id}:${l.season_id}`, Number(l.level)]));
@@ -54,6 +58,8 @@ export async function getPublic(): Promise<PublicProject[]> {
         const pl = person.get(r.player_id)!;
         return { id: pl.id, nickname: pl.nickname, photo: avatarUrl(pl.photo_url), level: lvl.get(`${r.player_id}:${sid}`) ?? 0 };
       }),
+      showed: Object.fromEntries((weeks.data ?? []).filter((w) => w.season_id === sid).map((w) => [w.date as string, Number(w.showed)])),
+      finishers: Number((finishers.data ?? []).find((f) => f.season_id === sid)?.finishers ?? 0),
     } as PublicProject;
   });
 }
