@@ -32,6 +32,7 @@ It must be **extremely easy to use.** Borrow the restraint of minimalist fashion
 | Word | Meaning |
 |---|---|
 | Project | One challenge, such as Project 01 |
+| Batch | One group of up to 12 players doing a project together, with its own 14 dates |
 | Player | A member, shown by nickname and photo |
 | Session | One Wednesday 5am training |
 | Level | A player's session count in a project (LV 0 to LV 12 in Project 01) |
@@ -136,7 +137,7 @@ The project is the stage. Everything a visitor or player sees hangs off a projec
    - **The feed.** Newest first, good events only: a level reached, a piece unlocked, an achievement earned, a group achievement, a finisher. Example lines: `KAI REACHED LV 4. UNLOCKED SINGLET.` and `WEEK 5. ALL 12 SHOWED UP.` A miss never creates a feed line.
    - **Rules.** A few plain lines and the 14 dates.
 3. **Player page (status window).** Photo and nickname; level as a huge number with twelve markers; the player's own 14-week track; inventory as objects; achievements; then the record, newest first (`WK 3 · 16 DEC · GROUP · UNLOCKED SOCKS`); finished projects with their season mark.
-4. **Join.** Interest form: name, job, why you want in, who referred you. Stores to a waiting list. Entry is by referral, so this does not create an account.
+4. **Join.** Replaced by the account and request flow in section 13.
 
 ### Player (signed in)
 
@@ -328,3 +329,100 @@ A first version is built and runs locally. Read `docs/MKMV_Build_Handover.md` fo
 7. Add the moments and the motion rules.
 
 Show the new project page and the Me screen for review before doing steps 3 to 7.
+
+---
+
+## 13. Accounts, batches and joining
+
+Decided 25 Nov 2026. **This section overrides sections 4, 5, 6 and 12 wherever they differ.** Entry is no longer referral-only: anyone can register and ask to join, and founders approve.
+
+Do not start this until the site is ready for the first session on Wednesday 2 Dec 2026. The first players are added by hand.
+
+### Batches
+
+- A project runs in **batches**. A batch is up to 12 players with its own 14 Wednesdays. In the data this is the existing season and group; show it to people as "Batch 1", "Batch 2".
+- **Project 01, Batch 1:** 2 Dec 2026 to 3 Mar 2027.
+- **Late joining:** a batch accepts new players until the day before its third session. For Batch 1 that means requests close on Tuesday 15 Dec 2026 at 21:00 Malaysia time, so the latest first session is 16 Dec. Store this as a `join_closes_at` on the batch.
+- A late joiner works to the same batch dates as everyone else. Someone starting on 9 Dec has one miss to spare; someone starting on 16 Dec has none. Show this plainly on the request form: "You have 12 Wednesdays left and need all 12."
+- Seats are still capped at 12. When a batch is full or closed, the only action is the waitlist.
+
+### Four kinds of visitor
+
+| Who | Sees | Main action |
+|---|---|---|
+| Visitor (signed out) | Every project, its players, kit and rules | Create account |
+| Registered (signed in, no seat) | The same, plus the status of their own request | Request to join, or Join the waitlist |
+| Player (has a seat) | The same, plus their own level, weekly actions, kit and orders | I'm out this week; Upload solo session |
+| Founder | Everything a player sees, plus a link to Admin | Admin |
+
+- Nobody has to register to look around.
+- Registering creates an account with no seat. A registered person without a seat never appears on any public page.
+
+### The project button
+
+One primary button on the project page, chosen by the batch state and the visitor:
+
+| Batch state | Signed out or registered | Player in this batch |
+|---|---|---|
+| Upcoming | Join the waitlist | Their progress |
+| Open (seats left, before `join_closes_at`) | Request to join | Their progress |
+| Running and closed, or full | Join the waitlist | Their progress |
+| Finished | See the record | Their record |
+
+A person with a request already in sees its status in place of the button: `REQUESTED`, `ON THE WAITLIST` or `YOU'RE IN`.
+
+### Navigation
+
+- **Signed out:** top bar only: logo, Sign in, Join. No bottom bar.
+- **Signed in:** exactly two tabs, **Projects** and **Me**, for everyone.
+- **Me without a seat:** profile, request status, and the button to request or join the waitlist.
+- **Me with a seat:** as in section 6.
+- Founders get an **Admin** link inside Me. Admin pages never show the player tabs.
+
+### Request to join
+
+1. The person taps Request to join. If signed out, they register or sign in by email link and return straight to the form.
+2. The form asks for: real name, phone number, why they want in, and **the referring member's name and phone number (both required for now)**. It shows the batch dates and a required tick: "I can make 12 of these Wednesdays at 5am."
+3. The request is saved as `requested`.
+4. A founder decides in Admin: **Approve**, **Waitlist for the next batch**, or **Waitlist for the next project**. There is no "declined" status. A founder can remove a spam request.
+5. On approval the person gets a seat and a "You're in" email, then chooses a nickname and photo and gives consent before appearing publicly.
+
+Rules:
+
+- Approval is blocked when the batch has 12 players or is past `join_closes_at`.
+- One open request per person per project.
+- The waitlist choice is also available directly to the person: "next batch of this project" or "the next project".
+- If the referrer's phone number matches a player, link that player as the referrer on approval. If it does not match, show the typed name and number to the founder and let them pick or skip.
+- The referrer's name and phone number, and the applicant's real name and phone, are founder-only data. Never expose them through a public view.
+
+### Data
+
+- Replace the `waitlist` table with `join_request`: person, project, batch (nullable), kind (`join`, `waitlist_next_batch`, `waitlist_next_project`), status (`requested`, `approved`, `waitlisted`, `withdrawn`, `removed`), reason, referrer name, referrer phone, commitment ticked, created at, decided by, decided at. Migrate existing waitlist rows.
+- Add `join_closes_at` to the season. Add a batch number or label.
+- Approving runs in one database function that checks seats and the closing time, creates the enrolment and sets the status together.
+- Row-level security: a person reads and creates only their own requests and can withdraw them; founders read and decide all.
+
+### Admin
+
+Admin is its own area at `/admin`, with its own layout and its own menu, on the same domain. It shares nothing visually with the player pages except the logo.
+
+1. **Today.** Next session date, who has given notice, and counts of pending requests and unpaid orders. This is the admin home.
+2. **Roll call.**
+3. **Requests.** Pending first, with the three decisions; then the two waitlists.
+4. **Players.** Who is in each batch, seats left, referrers.
+5. **Orders.**
+6. **Flags.**
+7. **Setup.** Projects, batches and dates, the joining deadline, products, prices, bank text.
+
+Move `/roll-call` under `/admin` and redirect the old address.
+
+### Extra acceptance checks
+
+21. A signed-out visitor can open every public page and is asked to register only when they tap Request to join or Join the waitlist.
+22. A registered person without a seat appears on no public page.
+23. Request to join cannot be submitted without the referrer's name and phone number and the commitment tick.
+24. Approval fails when the batch has 12 players, and fails after `join_closes_at`.
+25. For Batch 1, the request button turns into Join the waitlist at 21:00 on Tuesday 15 Dec 2026, Malaysia time.
+26. A player approved on 15 Dec is told they need all 12 remaining Wednesdays, and the finisher rule treats them the same as everyone else.
+27. No admin page shows the player tabs, and no player page shows admin controls.
+28. A referrer's phone number is never returned to anyone but a founder.
