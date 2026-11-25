@@ -2,11 +2,11 @@
 import { useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
-export function SignInForm() {
+export function SignInForm({ linkError = false }: { linkError?: boolean }) {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState(() =>
     // Supabase reports a bad or used link in the URL hash.
-    typeof location !== "undefined" && location.hash.includes("error_code=")
+    linkError || (typeof location !== "undefined" && location.hash.includes("error_code="))
       ? "That link is dead. Send a fresh one and open only the newest email."
       : "",
   );
