@@ -9,14 +9,9 @@ const item = "min-h-11 px-3 flex items-center";
 
 async function Nav() {
   let user = null as { id: string } | null;
-  let founder = false;
   if (supabaseConfigured()) {
     const db = await supabaseServer();
     user = (await db.auth.getUser()).data.user;
-    if (user) {
-      const { data } = await db.from("player").select("role").eq("auth_user_id", user.id).maybeSingle();
-      founder = data?.role === "founder";
-    }
   }
   // Signed out: Sign in, Join. Signed in: account actions only (Me, Inventory, Profile live in the bottom bar).
   if (!user) {
@@ -29,7 +24,6 @@ async function Nav() {
   }
   return (
     <nav className="flex items-center gap-1 text-sm uppercase tracking-wide font-bold">
-      {founder && <Link href="/admin" className={`${item} border border-ink`}>Admin</Link>}
       <form action={signOut}><SubmitButton className={item} pendingLabel="Signing out…">Sign out</SubmitButton></form>
     </nav>
   );
