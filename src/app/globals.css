@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #10100F;
+  --offwhite: #EAE4DE;
+  --oxblood: #522E2C; /* finisher states and finisher kit only, on off-white */
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-offwhite: var(--offwhite);
+  --color-oxblood: var(--oxblood);
+  --font-sans: var(--font-archivo), Arial, Helvetica, sans-serif;
+  --font-display: var(--font-archivo), Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: var(--offwhite);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-stretch: 125%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+.slant { display: inline-block; transform: skewX(-5deg); }
+
+:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
