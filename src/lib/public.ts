@@ -67,3 +67,16 @@ export async function getPublic(): Promise<Project[]> {
     return { ...p, batches: mine, ladder: mine.find((b) => b.ladder.length)?.ladder ?? [] } as Project;
   });
 }
+
+/** Definitions per batch, and one player's logged sessions (only if they are public). */
+export async function getHistory(playerId?: string) {
+  const db = client();
+  const [defs, record] = await Promise.all([
+    db.from("achievement").select("season_id, name, scope, rule, dates").order("sort"),
+    playerId ? db.from("public_record").select("season_id, date, type").eq("player_id", playerId).order("date") : Promise.resolve({ data: [] }),
+  ]);
+  return {
+    definitions: (defs.data ?? []) as { season_id: string; name: string; scope: "individual" | "group"; rule: string; dates: string[] }[],
+    record: (record.data ?? []) as { season_id: string; date: string; type: "group" | "solo" }[],
+  };
+}

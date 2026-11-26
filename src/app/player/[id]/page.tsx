@@ -6,7 +6,9 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Ladder } from "@/components/Ladder";
 import { LevelBar } from "@/components/LevelBar";
-import { getPublic } from "@/lib/public";
+import { getHistory, getPublic } from "@/lib/public";
+import { Achievements, Label, RecordList } from "@/components/History";
+import { earned, recordLines } from "@/lib/record";
 
 async function Content({ params }: { params: Promise<{ id: string }> }) {
   await connection();
@@ -20,6 +22,10 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   if (!joined.length) notFound();
   const me = joined[0].me;
   const finished = joined.filter((j) => j.me.level >= j.b.sessionsRequired);
+  const history = await getHistory(id);
+  const per = joined.map(({ b }) => ({ b, defs: history.definitions.filter((d) => d.season_id === b.id), logged: history.record.filter((r) => r.season_id === b.id) }));
+  const achievements = per.flatMap(({ b, defs, logged }) => defs.map((d) => ({ name: d.name, got: earned(d, logged, b) })));
+  const lines = per.flatMap(({ b, defs, logged }) => recordLines(logged, defs, b.ladder, b).map((l) => ({ ...l, key: `${b.id}${l.date}` })));
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
@@ -40,6 +46,9 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
           <div className="mt-6"><Ladder steps={b.ladder} level={m.level} /></div>
         </section>
       ))}
+
+      <section className="mt-8"><Label>Achievements</Label><Achievements items={achievements} /></section>
+      <section className="mt-8"><Label>Record</Label><RecordList lines={lines} /></section>
 
       <section className="mt-8">
         <h2 className="lbl mb-4 border-b border-ink pb-2">Finished</h2>
