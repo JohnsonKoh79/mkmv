@@ -13,12 +13,6 @@ export async function advanceOrder(id: string, from: string) {
   revalidatePath("/admin/orders");
 }
 
-export async function dismissWaitlist(id: string) {
-  const { db } = await requireFounder();
-  await db.from("waitlist").delete().eq("id", id);
-  revalidatePath("/admin/waitlist");
-}
-
 export async function savePayment(form: FormData) {
   const { db } = await requireFounder();
   await db.from("setting").upsert({ key: "payment_instructions", value: txt(form, "value", 1000) });

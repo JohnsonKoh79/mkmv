@@ -15,7 +15,7 @@ async function Content() {
       ? db.from("attendance").select("player:player_id(nickname, real_name)").eq("session_date_id", next.id).eq("notice_given", true)
       : Promise.resolve({ data: [] }),
     db.from("order").select("*", { count: "exact", head: true }).eq("status", "preordered"),
-    db.from("waitlist").select("*", { count: "exact", head: true }),
+    db.from("join_request").select("*", { count: "exact", head: true }).in("status", ["requested", "waitlisted"]),
     db.from("enrolment").select("*", { count: "exact", head: true }),
   ]);
   const names = (out ?? []).map((a) => {
