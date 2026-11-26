@@ -4,7 +4,7 @@ import { AdminShell, H, btnDark } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
 import { advanceOrder } from "../actions";
 
-const LABEL: Record<string, string> = { preordered: "Pre-ordered", paid: "Paid", sent_to_printer: "Sent to printer", handed_over: "Handed over" };
+const LABEL: Record<string, string> = { preordered: "Ordered", paid: "Paid", sent_to_printer: "Sent to printer", handed_over: "Handed over" };
 const BUTTON: Record<string, string> = { preordered: "Mark paid", paid: "Sent to printer", sent_to_printer: "Handed over" };
 
 async function Content() {
