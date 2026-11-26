@@ -7,7 +7,7 @@ const ITEMS = [
   ["/admin/roll-call", "Roll call"],
   ["/admin/orders", "Orders"],
   ["/admin/flags", "Flags"],
-  ["/admin/waitlist", "Waiting list"],
+  ["/admin/requests", "Requests"],
   ["/admin/setup", "Setup"],
 ] as const;
 

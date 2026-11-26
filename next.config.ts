@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   redirects: async () => [
     { source: "/roll-call", destination: "/admin/roll-call", permanent: false },
+    { source: "/admin/waitlist", destination: "/admin/requests", permanent: false },
     { source: "/status", destination: "/move", permanent: false },
     { source: "/inventory", destination: "/move", permanent: false },
     { source: "/profile", destination: "/me", permanent: false },

@@ -15,7 +15,7 @@ async function Content() {
       ? db.from("attendance").select("player:player_id(nickname, real_name)").eq("session_date_id", next.id).eq("notice_given", true)
       : Promise.resolve({ data: [] }),
     db.from("order").select("*", { count: "exact", head: true }).eq("status", "preordered"),
-    db.from("join_request").select("*", { count: "exact", head: true }).in("status", ["requested", "waitlisted"]),
+    db.from("join_request").select("*", { count: "exact", head: true }).eq("status", "requested"),
     db.from("enrolment").select("*", { count: "exact", head: true }),
   ]);
   const names = (out ?? []).map((a) => {
@@ -25,7 +25,7 @@ async function Content() {
   const tiles = [
     ["/admin/setup", "Seats taken", seats.count ?? 0],
     ["/admin/orders", "Unpaid orders", orders.count ?? 0],
-    ["/admin/waitlist", "Waiting", waiting.count ?? 0],
+    ["/admin/requests", "Requests", waiting.count ?? 0],
   ] as const;
 
   return (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ProfileForm } from "./ProfileForm";
+import { WithdrawButton } from "./WithdrawButton";
 import { signOut } from "../actions";
 import { getViewer } from "@/lib/viewer";
 import { getPublic } from "@/lib/public";
@@ -32,7 +33,10 @@ async function Content() {
             {v.requests.map((r) => (
               <li key={r.id} className="flex items-center justify-between gap-3 border-b border-ink/40 py-3">
                 <span className="font-bold">{projects.find((x) => x.id === r.projectId)?.title ?? "Next project"}</span>
-                <span className="border border-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]">{STATUS[r.status]}</span>
+                <span className="flex items-center gap-3">
+                  {r.status !== "approved" && <WithdrawButton id={r.id} />}
+                  <span className="border border-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]">{STATUS[r.status]}</span>
+                </span>
               </li>
             ))}
           </ul>

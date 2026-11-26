@@ -67,3 +67,18 @@ export async function adminSignOut() {
   await db.auth.signOut();
   redirect("/admin/sign-in");
 }
+
+export async function approveRequest(id: string, form: FormData) {
+  const { db } = await requireFounder();
+  const { error } = await db.rpc("approve_request", { p_request: id, p_referrer: txt(form, "referrer", 60) || null });
+  if (error) redirect(`/admin/requests?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/admin/requests");
+  redirect("/admin/requests");
+}
+
+export async function decideRequest(id: string, decision: "waitlist_next_batch" | "waitlist_next_project" | "removed") {
+  const { db } = await requireFounder();
+  const { error } = await db.rpc("decide_request", { p_request: id, p_decision: decision });
+  if (error) redirect(`/admin/requests?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/admin/requests");
+}
