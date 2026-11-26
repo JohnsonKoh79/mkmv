@@ -101,7 +101,7 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment }
                 {state === "held" && <p className="text-[13px]">Yours to buy when you finish.</p>}
                 {(state === "progress" || state === "locked") && (
                   <p className="text-[13px] font-bold">
-                    {toGo} {toGo === 1 ? "session" : "sessions"} to go.{s.isFree ? " Free when you finish." : s.release === "on_finish" ? " Yours to buy when you finish." : ""}
+                    {toGo} {toGo === 1 ? "session" : "sessions"} to go.{s.isFree ? " Earned when you finish." : s.release === "on_finish" ? " Yours to buy when you finish." : ""}
                   </p>
                 )}
                 {state === "complete" && openId !== s.id && (

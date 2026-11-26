@@ -37,7 +37,7 @@ export function Missions({ steps, signedIn, savedCut, locked = false }: { steps:
           const tone = reserved && !locked ? "border-oxblood text-oxblood" : "border-ink";
           const line = locked
             ? `${s.level} sessions to go.`
-            : s.isFree ? "Free. The finisher award, in a men's or women's cut."
+            : s.isFree ? "Earned. The finisher award, in a men's or women's cut."
             : s.release === "on_finish" ? "Complete it, then finish the project, and you can buy it."
             : "Complete it and you can buy this piece.";
           return (
