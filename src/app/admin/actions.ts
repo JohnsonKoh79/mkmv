@@ -54,8 +54,17 @@ export async function addPlayer(form: FormData): Promise<void> {
   const { count } = await db.from("enrolment").select("*", { count: "exact", head: true }).eq("group_id", group.id);
   if ((count ?? 0) >= group.seat_limit) return; // group is full
 
-  const { data: p } = await db.from("player").insert({ real_name, contact, nickname }).select("id").single();
-  if (p) await db.from("enrolment").insert({ player_id: p.id, group_id: group.id, referrer_id: referrer });
+  // Someone who already signed up has an account with this email: give that account the seat.
+  const { data: existing } = await db.from("player").select("id, real_name, nickname")
+    .ilike("contact", contact.replace(/[\\%_]/g, "\\$&")).maybeSingle();
+  let playerId = existing?.id as string | undefined;
+  if (existing) {
+    await db.from("player").update({ real_name: existing.real_name ?? real_name, nickname: existing.nickname ?? nickname }).eq("id", existing.id);
+  } else {
+    const { data: p } = await db.from("player").insert({ real_name, contact, nickname }).select("id").single();
+    playerId = p?.id;
+  }
+  if (playerId) await db.from("enrolment").upsert({ player_id: playerId, group_id: group.id, referrer_id: referrer }, { onConflict: "player_id,group_id", ignoreDuplicates: true });
   revalidatePath("/admin/setup");
 }
 
