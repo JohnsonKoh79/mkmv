@@ -8,55 +8,44 @@ import { Ladder } from "@/components/Ladder";
 import { LevelBar } from "@/components/LevelBar";
 import { getPublic } from "@/lib/public";
 
-const H = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="uppercase text-xs tracking-widest border-b border-ink pb-2 mb-4">{children}</h2>
-);
-
 async function Content({ params }: { params: Promise<{ id: string }> }) {
   await connection();
   const { id } = await params;
-  const projects = (await getPublic()).filter((p) => p.players.some((pl) => pl.id === id));
-  const me = projects[0]?.players.find((pl) => pl.id === id);
-  if (!me) notFound();
-  const finished = projects.filter((p) => (p.players.find((pl) => pl.id === id)?.level ?? 0) >= p.sessionsRequired);
+  const joined = (await getPublic()).flatMap((p) =>
+    p.batches.flatMap((b) => {
+      const me = b.players.find((pl) => pl.id === id);
+      return me ? [{ p, b, me }] : [];
+    }),
+  );
+  if (!joined.length) notFound();
+  const me = joined[0].me;
+  const finished = joined.filter((j) => j.me.level >= j.b.sessionsRequired);
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-xl w-full mx-auto">
+    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
       <div className="border border-ink">
-        <div className="aspect-[4/5] border-b border-ink overflow-hidden">
+        <div className="aspect-[4/5] overflow-hidden border-b border-ink">
           {me.photo ? <img src={me.photo} alt={me.nickname} className="h-full w-full object-cover" /> : (
-            <div className="h-full flex items-end p-3"><span className="font-display text-7xl leading-none opacity-30" aria-hidden>{me.nickname.slice(0, 1)}</span></div>
+            <div className="flex h-full items-end p-3"><span className="font-display text-7xl leading-none opacity-30" aria-hidden>{me.nickname.slice(0, 1)}</span></div>
           )}
         </div>
-        <div className="p-4">
-          <p className="uppercase text-xs tracking-widest">Player</p>
-          <h1 className="font-display text-4xl mt-1"><span className="slant">{me.nickname}</span></h1>
-        </div>
+        <div className="p-4"><p className="lbl">MKMV player</p><h1 className="h2 mt-1 !text-4xl">{me.nickname}</h1></div>
       </div>
 
-      {projects.map((p) => {
-        const lvl = p.players.find((pl) => pl.id === id)?.level ?? 0;
-        const done = lvl >= p.sessionsRequired;
-        return (
-          <div key={p.id}>
-            <section className="mt-8">
-              <H>{p.name}</H>
-              <LevelBar level={lvl} total={p.sessionsRequired} />
-              {done && <p className="mt-3 inline-block border border-oxblood text-oxblood px-3 py-1 uppercase text-xs font-bold tracking-widest">Finisher</p>}
-            </section>
-            <section className="mt-8"><H>Inventory</H><Ladder steps={p.ladder} level={lvl} /></section>
-          </div>
-        );
-      })}
+      {joined.map(({ p, b, me: m }) => (
+        <section key={b.id} className="mt-8">
+          <h2 className="lbl mb-4 border-b border-ink pb-2">{p.title} · Batch {b.number}</h2>
+          <LevelBar level={m.level} total={b.sessionsRequired} />
+          {m.level >= b.sessionsRequired && <p className="lbl mt-3 inline-block border border-oxblood px-3 py-1 text-oxblood">Finisher</p>}
+          <div className="mt-6"><Ladder steps={b.ladder} level={m.level} /></div>
+        </section>
+      ))}
 
       <section className="mt-8">
-        <H>Finished</H>
-        {finished.length ? finished.map((p) => <p key={p.id} className="font-display text-xl text-oxblood"><span className="slant">{p.name}</span></p>) : <p>Not yet.</p>}
+        <h2 className="lbl mb-4 border-b border-ink pb-2">Finished</h2>
+        {finished.length ? finished.map((j) => <p key={j.b.id} className="h2 !text-xl text-oxblood">{j.p.title}</p>) : <p>Not yet.</p>}
       </section>
-
-      <Link href={`/project/${projects[0].id}`} className="mt-8 inline-flex min-h-11 items-center border border-ink px-5 uppercase text-sm font-bold tracking-wide">
-        Back to {projects[0].name}
-      </Link>
+      <Link href={`/project/${joined[0].p.slug}`} className="btn mt-8 border-ink">Back to {joined[0].p.title}</Link>
     </main>
   );
 }

@@ -11,12 +11,12 @@ async function Content() {
   await connection();
   const { db } = await requireFounder();
   const { data } = await db.from("order")
-    .select("id, size, status, price, created_at, step:ladder_step_id(ink, product:product_id(name)), player:player_id(nickname, real_name)")
+    .select("id, size, cut, status, price, created_at, step:ladder_step_id(ink, product:product_id(name)), player:player_id(nickname, real_name)")
     .order("created_at");
   const orders = (data ?? []).map((o) => {
     const step = o.step as unknown as { ink: string; product: { name: string } };
     const pl = o.player as unknown as { nickname: string | null; real_name: string };
-    return { id: o.id as string, size: o.size as string, status: o.status as string, price: Number(o.price),
+    return { id: o.id as string, size: o.cut ? `${o.size} · ${o.cut === "w" ? "Women's" : "Men's"}` : (o.size as string), status: o.status as string, price: Number(o.price),
       piece: `${step.product.name} · ${step.ink}`, who: `${pl.nickname ?? ""} (${pl.real_name})`.trim() };
   });
   if (!orders.length) return <p>No orders yet. Prices first.</p>;

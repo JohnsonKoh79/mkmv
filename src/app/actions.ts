@@ -7,8 +7,8 @@ export async function markUnlockSeen(stepId: string) {
   const db = await supabaseServer();
   const { data: pid } = await db.rpc("my_player_id");
   if (pid) await db.from("unlock_seen").upsert({ player_id: pid, ladder_step_id: stepId });
-  revalidatePath("/status");
-  redirect("/status");
+  revalidatePath("/move");
+  redirect("/move");
 }
 
 export async function signOut() {

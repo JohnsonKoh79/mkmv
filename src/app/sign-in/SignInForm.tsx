@@ -4,7 +4,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 
 const WAIT = 60; // seconds before another link can be requested
 
-export function SignInForm({ linkError = false }: { linkError?: boolean }) {
+export function SignInForm({ linkError = false, next = null }: { linkError?: boolean; next?: string | null }) {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState(() =>
     // Supabase reports a bad or used link in the URL hash.
@@ -27,6 +27,8 @@ export function SignInForm({ linkError = false }: { linkError?: boolean }) {
     if (lock.current) return;
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return setMsg("Sign-in opens soon.");
     lock.current = true; setBusy(true); setMsg("");
+    // Remember where they were heading. If the link opens in another browser they simply land on the default page.
+    document.cookie = next ? `mkmv_next=${next}; path=/; max-age=3600; samesite=lax` : "mkmv_next=; path=/; max-age=0";
     const { error } = await supabaseBrowser().auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${location.origin}/auth/callback`, shouldCreateUser: true },
@@ -77,7 +79,7 @@ export function SignInForm({ linkError = false }: { linkError?: boolean }) {
       <button disabled={busy} aria-busy={busy} className="w-full min-h-14 bg-ink text-offwhite uppercase text-sm font-bold tracking-widest disabled:opacity-50">
         {busy ? "Sending…" : "Send link"}
       </button>
-      <p className="text-sm">No password. We email you a link.</p>
+      <p className="text-sm">No password. We email you a link. New here? The same link creates your account.</p>
     </form>
   );
 }

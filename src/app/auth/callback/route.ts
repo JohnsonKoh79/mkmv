@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const { error } = await db.auth.exchangeCodeForSession(code);
     if (!error) {
       await db.rpc("link_player");
-      return NextResponse.redirect(`${origin}/status`);
+      return NextResponse.redirect(`${origin}/`);
     }
   }
   return NextResponse.redirect(`${origin}/sign-in`);

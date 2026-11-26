@@ -103,7 +103,7 @@ export function Shop({ steps, orders, payment }: { steps: ShopStep[]; orders: Sh
           </details>
           {msg && <p role="alert" className="mx-4 mb-2 border border-ink p-3 text-sm">{msg}</p>}
           <button type="button" disabled={busy} onClick={checkout} className="w-full min-h-14 bg-ink text-offwhite uppercase text-sm font-bold tracking-wide disabled:opacity-40">
-            {busy ? "Locking it in" : `Pre-order now · ${rm(total)}`}
+            {busy ? "Locking it in" : `Get it · ${rm(total)}`}
           </button>
         </section>
       )}

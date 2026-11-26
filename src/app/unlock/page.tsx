@@ -8,9 +8,9 @@ import { markUnlockSeen } from "../actions";
 async function UnlockContent() {
   await connection(); // per-request: depends on who is signed in and the current time
   const me = await getMe();
-  if (me.kind !== "ok") redirect("/status");
+  if (me.kind !== "ok") redirect("/move");
   const step = me.ctx.ladder.find((s) => s.id === me.ctx.unseen[0]);
-  if (!step) redirect("/status");
+  if (!step) redirect("/move");
 
   // Oxblood only on off-white, never on black.
   const ox = step.ink === "oxblood";

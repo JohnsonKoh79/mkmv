@@ -1,39 +1,35 @@
-import { SubmitButton } from "@/components/SubmitButton";
 import Link from "next/link";
 import { Suspense } from "react";
-import { signOut } from "@/app/actions";
 import { supabaseConfigured, supabaseServer } from "@/lib/supabase/server";
 /* eslint-disable @next/next/no-img-element */
 
-const item = "min-h-11 px-3 flex items-center";
-
 async function Nav() {
   let user = null as { id: string } | null;
+  let nickname: string | null = null;
   if (supabaseConfigured()) {
     const db = await supabaseServer();
     user = (await db.auth.getUser()).data.user;
+    if (user) nickname = (await db.from("player").select("nickname").eq("auth_user_id", user.id).maybeSingle()).data?.nickname ?? null;
   }
-  // Signed out: Sign in, Join. Signed in: account actions only (Me, Inventory, Profile live in the bottom bar).
+  // Signed out: Sign in, Join. Signed in: just who you are; the tabs do the rest.
   if (!user) {
     return (
-      <nav className="flex items-center gap-1 text-sm uppercase tracking-wide font-bold">
-        <Link href="/sign-in" className={item}>Sign in</Link>
-        <Link href="/join" className={`${item} border border-ink`}>Join</Link>
+      <nav className="flex items-center gap-4">
+        <Link href="/sign-in" className="flex min-h-11 items-center text-[13px] font-semibold">Sign in</Link>
+        <Link href="/sign-in" className="flex min-h-11 items-center border border-ink px-3.5 text-xs font-bold uppercase tracking-[0.14em]">Join</Link>
       </nav>
     );
   }
   return (
-    <nav className="flex items-center gap-1 text-sm uppercase tracking-wide font-bold">
-      <form action={signOut}><SubmitButton className={item} pendingLabel="Signing out…">Sign out</SubmitButton></form>
-    </nav>
+    <Link href="/me" className="flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.14em]">{nickname ?? "Me"}</Link>
   );
 }
 
 export function Header() {
   return (
-    <header className="flex items-center justify-between px-4 h-16 border-b border-ink">
-      <Link href="/" aria-label="MKMV home" className="flex items-center h-11">
-        <img src="/logo/mkmv-horizontal-black.svg" alt="MKMV" className="h-6 w-auto" />
+    <header className="flex items-center justify-between border-b border-ink px-4 py-1">
+      <Link href="/" aria-label="MKMV home" className="flex min-h-11 items-center">
+        <img src="/logo/mkmv-horizontal-black.svg" alt="MKMV" className="h-4 w-auto" />
       </Link>
       <Suspense fallback={null}><Nav /></Suspense>
     </header>
