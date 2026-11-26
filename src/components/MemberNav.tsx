@@ -12,7 +12,7 @@ const ITEMS = [
 /** Always-visible thumb-height bar. Shown to signed-in players on every page except focus screens. */
 export function MemberNav() {
   const path = usePathname();
-  if (path.startsWith("/unlock") || path.startsWith("/sign-in") || path.startsWith("/auth")) return null;
+  if (path.startsWith("/admin") || path.startsWith("/unlock") || path.startsWith("/sign-in") || path.startsWith("/auth")) return null;
   return (
     <>
       <div className="h-16" aria-hidden />

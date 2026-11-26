@@ -1,7 +1,6 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
-import { Header } from "@/components/Header";
+import { AdminShell } from "@/components/AdminShell";
 import { RollCall, type RollPlayer } from "./RollCall";
 import { fmtDate } from "@/lib/format";
 import { klToday } from "@/lib/me";
@@ -11,7 +10,7 @@ async function Content() {
   await connection(); // per-request: depends on who is signed in and the current time
   const db = await supabaseServer();
   const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/admin/sign-in");
   const { data: me } = await db.from("player").select("role").eq("auth_user_id", user.id).maybeSingle();
   if (me?.role !== "founder") redirect("/");
 
@@ -46,13 +45,5 @@ async function Content() {
 }
 
 export default function RollCallPage() {
-  return (
-    <>
-      <Header />
-      <main className="flex-1 px-4 py-6">
-        <p className="uppercase text-xs tracking-widest">Founder · Roll call</p>
-        <Suspense fallback={null}><Content /></Suspense>
-      </main>
-    </>
-  );
+  return <AdminShell title="Roll call"><Content /></AdminShell>;
 }

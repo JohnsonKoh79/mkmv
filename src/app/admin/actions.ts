@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireFounder } from "@/lib/founder";
 
 const txt = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -56,4 +57,10 @@ export async function addPlayer(form: FormData): Promise<void> {
   const { data: p } = await db.from("player").insert({ real_name, contact, nickname }).select("id").single();
   if (p) await db.from("enrolment").insert({ player_id: p.id, group_id: group.id, referrer_id: referrer });
   revalidatePath("/admin/setup");
+}
+
+export async function adminSignOut() {
+  const { db } = await requireFounder();
+  await db.auth.signOut();
+  redirect("/admin/sign-in");
 }
