@@ -5,7 +5,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 export async function requireFounder() {
   const db = await supabaseServer();
   const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/admin/sign-in");
   const { data: me } = await db.from("player").select("id, role").eq("auth_user_id", user.id).maybeSingle();
   if (me?.role !== "founder") redirect("/");
   return { db, meId: me.id as string };
