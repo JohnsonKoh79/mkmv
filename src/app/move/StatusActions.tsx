@@ -3,11 +3,10 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
-const btn = "w-full min-h-16 border border-ink px-4 py-3 text-left flex flex-col justify-center gap-0.5 disabled:opacity-60";
-
-export function StatusActions({
-  playerId, noticeLabel, noticeOpen, soloOpen, soloNote,
-}: { playerId: string; noticeLabel: string; noticeOpen: boolean; soloOpen: boolean; soloNote: string }) {
+/** The two weekly actions, on the black "This week" block. Two taps maximum for either. */
+export function StatusActions({ playerId, noticeNote, noticeOpen, soloNote, soloOpen }: {
+  playerId: string; noticeNote: string; noticeOpen: boolean; soloNote: string; soloOpen: boolean;
+}) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -27,7 +26,7 @@ export function StatusActions({
     const db = supabaseBrowser();
     const path = `${playerId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
     const up = await db.storage.from("evidence").upload(path, file, { contentType: file.type });
-    if (up.error) { setBusy(false); return setMsg("Upload failed. Go again."); }
+    if (up.error) { setBusy(false); return setMsg("Upload did not go through. Go again."); }
     const { error } = await db.rpc("log_solo", { evidence: path });
     setBusy(false);
     if (error) return setMsg(error.message.includes("already") ? "Already logged today." : "Solo counts on Wednesdays only.");
@@ -35,16 +34,16 @@ export function StatusActions({
   }
 
   return (
-    <div className="space-y-3">
-      <button type="button" disabled={busy || !noticeOpen} onClick={notice} className={btn}>
-        <span className="uppercase text-sm font-bold tracking-wide">I&apos;m out this week</span><span className="text-sm">{noticeLabel}</span>
-      </button>
-      <button type="button" disabled={busy || !soloOpen} onClick={() => fileRef.current?.click()} className={btn}>
-        <span className="uppercase text-sm font-bold tracking-wide">Upload solo session</span><span className="text-sm">{soloNote}</span>
-      </button>
+    <div className="flex flex-col gap-3">
+      <button type="button" disabled={busy || !soloOpen} onClick={() => fileRef.current?.click()}
+        className="btn border-offwhite bg-offwhite text-ink disabled:opacity-60">{busy ? "Working…" : "Upload solo session"}</button>
+      <p className="text-xs opacity-80">{soloNote}</p>
+      <button type="button" disabled={busy || !noticeOpen} onClick={notice}
+        className="btn border-offwhite text-offwhite disabled:opacity-60">I&apos;m out this week</button>
+      <p className="text-xs opacity-80">{noticeNote}</p>
       <input ref={fileRef} type="file" accept="image/*" className="sr-only" tabIndex={-1}
         onChange={(e) => { const f = e.target.files?.[0]; if (f) solo(f); e.target.value = ""; }} />
-      {msg && <p role="alert" className="border border-ink p-3 text-sm">{msg}</p>}
+      {msg && <p role="alert" className="border border-offwhite p-3 text-sm">{msg}</p>}
     </div>
   );
 }

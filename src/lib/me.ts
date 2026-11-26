@@ -9,6 +9,11 @@ export interface MyContext {
   isFounder: boolean;
   nickname: string | null;
   projectName: string;
+  projectLabel: string;
+  projectTitle: string;
+  projectSlug: string;
+  batchNumber: number;
+  seasonId: string;
   descriptor: string;
   season: Season;
   noticeDeadlines: Record<string, string>;
@@ -41,7 +46,7 @@ export async function getMe(): Promise<MeResult> {
   if (!seasonId) return { kind: "not-enrolled" };
 
   const [{ data: season }, { data: dates }, { data: att }, { data: steps }, { data: seen }] = await Promise.all([
-    db.from("season").select("sessions_required, project:project_id(name, descriptor)").eq("id", seasonId).single(),
+    db.from("season").select("sessions_required, batch_number, project:project_id(name, descriptor, label, title, slug)").eq("id", seasonId).single(),
     db.from("session_date").select("date, notice_deadline").eq("season_id", seasonId).order("date"),
     db.from("attendance").select("type, notice_given, session_date:session_date_id(date)").eq("player_id", player.id),
     db.from("ladder_step").select("id, level_required, ink, release, is_free, product:product_id(name)").eq("season_id", seasonId).order("level_required"),
@@ -49,7 +54,7 @@ export async function getMe(): Promise<MeResult> {
   ]);
   if (!season || !dates || !steps) return { kind: "not-enrolled" };
 
-  const project = season.project as unknown as { name: string; descriptor: string };
+  const project = season.project as unknown as { name: string; descriptor: string; label: string; title: string; slug: string };
   const rows = (att ?? []).map((a) => ({
     date: (a.session_date as unknown as { date: string }).date,
     type: a.type as AttendanceType,
@@ -70,6 +75,11 @@ export async function getMe(): Promise<MeResult> {
     isFounder: player.role === "founder",
     nickname: player.nickname,
     projectName: project.name,
+    projectLabel: project.label,
+    projectTitle: project.title,
+    projectSlug: project.slug,
+    batchNumber: season.batch_number,
+    seasonId,
     descriptor: project.descriptor,
     season: { sessionsRequired: season.sessions_required, dates: dates.map((d) => d.date) },
     noticeDeadlines: Object.fromEntries(dates.map((d) => [d.date, d.notice_deadline])),

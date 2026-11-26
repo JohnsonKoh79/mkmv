@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ProfileForm } from "./ProfileForm";
 import { WithdrawButton } from "./WithdrawButton";
+import { MyKit } from "./MyKit";
 import { signOut } from "../actions";
 import { getViewer } from "@/lib/viewer";
 import { getPublic } from "@/lib/public";
@@ -42,6 +43,7 @@ async function Content() {
           </ul>
         </section>
       )}
+      <MyKit playerId={v.playerId} />
       <ProfileForm playerId={v.playerId} nickname={p?.nickname ?? ""} photo={avatarUrl(p?.photo_url)} consent={p?.public_consent ?? false} />
       {v.isFounder && (
         <Link href="/admin" className="mt-8 flex min-h-12 items-center justify-between border border-ink px-4 text-sm font-bold uppercase tracking-wide"><span>Admin</span><span aria-hidden>→</span></Link>
