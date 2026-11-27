@@ -57,7 +57,7 @@ async function Content({ searchParams }: { searchParams: Promise<{ tab?: string 
   return (
     <div className="flex flex-col gap-6">
       <section className="flex items-center gap-4">
-        <div className="flex aspect-[4/5] w-24 shrink-0 items-center justify-center overflow-hidden border border-ink">
+        <div className="flex aspect-square w-24 shrink-0 items-center justify-center overflow-hidden border border-ink">
           {photo ? <img src={photo} alt="Your photo" className="h-full w-full object-cover" /> : <span className="font-display text-4xl opacity-30" aria-hidden>{name.slice(0, 1)}</span>}
         </div>
         <div className="min-w-0">

@@ -21,6 +21,7 @@ async function Content() {
     const proof = o.proof_url && o.status === "preordered" ? (await db.storage.from("proofs").createSignedUrl(o.proof_url, 600)).data?.signedUrl ?? null : null;
     return {
       id: o.id as string, status: o.status as string, price: Number(o.price), hasProof: Boolean(o.proof_url), proof,
+      heic: /\.hei[cf]$/i.test(o.proof_url ?? ""),
       size: o.cut ? `${o.size} · ${o.cut === "w" ? "Women's" : "Men's"}` : (o.size as string),
       piece: `${step.product.name} · ${step.ink}`, who: `${pl.nickname ?? ""} (${pl.real_name ?? "no name"})`.trim(),
     };
@@ -42,7 +43,9 @@ async function Content() {
         <span className="uppercase text-xs tracking-widest">Ref {o.id.slice(0, 6).toUpperCase()} · {o.status === "preordered" && o.hasProof ? "Proof uploaded" : LABEL[o.status]}</span></p>
       {o.proof && (
         <a href={o.proof} target="_blank" rel="noreferrer" className="mt-2 block">
-          <img src={o.proof} alt={`Payment screenshot from ${o.who}`} className="max-h-72 border border-ink object-contain" />
+          {o.heic
+            ? <span className={`${btn} inline-flex items-center`}>Download screenshot (iPhone photo)</span>
+            : <img src={o.proof} alt={`Payment screenshot from ${o.who}`} className="max-h-72 border border-ink object-contain" />}
         </a>
       )}
       <div className="mt-2 flex flex-wrap gap-2">

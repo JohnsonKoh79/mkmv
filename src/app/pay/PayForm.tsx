@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { rm } from "@/lib/orders";
+import { asJpeg } from "@/lib/photo";
 
 export function PayForm({ playerId, orderIds, total }: { playerId: string; orderIds: string[]; total: number }) {
   const router = useRouter();
@@ -17,8 +18,9 @@ export function PayForm({ playerId, orderIds, total }: { playerId: string; order
     if (file.size > 10 * 1024 * 1024) return setMsg("Photo is too large. Max 10 MB.");
     lock.current = true; setBusy(true); setMsg("");
     const db = supabaseBrowser();
-    const path = `${playerId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const up = await db.storage.from("proofs").upload(path, file, { contentType: file.type });
+    const photo = await asJpeg(file);
+    const path = `${playerId}/${Date.now()}-${photo.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const up = await db.storage.from("proofs").upload(path, photo, { contentType: photo.type });
     const { error } = up.error ? { error: up.error } : await db.rpc("submit_payment_proof", { p_orders: orderIds, p_path: path });
     lock.current = false; setBusy(false);
     if (error) return setMsg("That did not upload. Go again.");

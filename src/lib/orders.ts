@@ -7,5 +7,5 @@ export function orderStatus(o: O): string {
   if (o.status === "sent_to_printer") return "With the printer";
   if (o.status === "handed_over") return "Handed over";
   if (o.price === 0) return "Waiting for confirmation";
-  return o.proof ? "Checking your payment" : "Payment pending";
+  return o.proof ? "Pending for approval" : "Payment pending";
 }

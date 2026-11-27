@@ -26,7 +26,7 @@ export function Cropper({ src, onChange }: { src: string; onChange: (c: Crop) =>
 
   return (
     <div className="w-full max-w-xs">
-      <div className="relative aspect-[4/5] w-full touch-none select-none overflow-hidden border border-ink"
+      <div className="relative aspect-square w-full touch-none select-none overflow-hidden border border-ink"
         onPointerDown={(e) => { last.current = { x: e.clientX, y: e.clientY }; e.currentTarget.setPointerCapture(e.pointerId); }}
         onPointerUp={() => { last.current = null; }}
         onPointerMove={(e) => {

@@ -16,7 +16,8 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [nick, setNick] = useState(nickname);
-  const [ok, setOk] = useState(consent);
+  // Ticked to start with for a new profile; nothing is public until they press Save.
+  const [ok, setOk] = useState(consent || !nickname);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(photo);
   const [busy, setBusy] = useState(false);
@@ -29,9 +30,10 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
     setBusy(true); setMsg(""); setSaved(false);
     const db = supabaseBrowser();
     let path: string | null = null;
+    let cropped: Blob | null = null;
     if (file) {
       try {
-        const blob = await cropPhoto(file, crop.current ?? { cx: 0, cy: 0, zoom: 1 });
+        const blob = cropped = await cropPhoto(file, crop.current ?? { cx: 0, cy: 0, zoom: 1 });
         path = `${playerId}/avatar-${Date.now()}.jpg`;
         const up = await db.storage.from("avatars").upload(path, blob, { contentType: "image/jpeg" });
         if (up.error) throw up.error;
@@ -40,6 +42,8 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
     const { error } = await db.rpc("save_profile", { p_nickname: nick, p_photo: path, p_consent: ok });
     setBusy(false);
     if (error) return setMsg(friendly(error.message));
+    // Keep showing what was saved, not the uncropped original.
+    if (cropped) setPreview(URL.createObjectURL(cropped));
     setFile(null); setSaved(true); router.refresh();
   }
 
@@ -53,7 +57,7 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
             <button type="button" onClick={() => fileRef.current?.click()} className="min-h-11 text-xs font-bold uppercase tracking-widest underline">Choose another</button>
           </>
         ) : (
-        <button type="button" onClick={() => fileRef.current?.click()} className="block w-full max-w-xs aspect-[4/5] border border-ink overflow-hidden" aria-label="Choose photo">
+        <button type="button" onClick={() => fileRef.current?.click()} className="block w-full max-w-xs aspect-square border border-ink overflow-hidden" aria-label="Choose photo">
           {preview ? <img src={preview} alt="Your photo" className="w-full h-full object-cover" /> :
             <span className="flex h-full items-center justify-center uppercase text-sm font-bold tracking-wide">Add photo</span>}
         </button>

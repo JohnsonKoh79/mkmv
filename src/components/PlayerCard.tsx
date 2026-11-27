@@ -6,7 +6,7 @@ export function PlayerCard({ id, nickname, level, photo, finisher = false, dark 
   return (
     <li className="min-w-0">
       <Link href={`/player/${id}`} className="block">
-        <div className={`aspect-[4/5] border overflow-hidden ${dark ? "border-offwhite/40" : "border-ink/40"}`}>
+        <div className={`aspect-square border overflow-hidden ${dark ? "border-offwhite/40" : "border-ink/40"}`}>
           {photo ? (
             <img src={photo} alt={nickname} className="h-full w-full object-cover" />
           ) : (

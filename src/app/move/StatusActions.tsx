@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { asJpeg } from "@/lib/photo";
 
 /** The two weekly actions, on the black "This week" block. Two taps maximum for either. */
 export function StatusActions({ playerId, noticeNote, noticeOpen, soloNote, soloOpen }: {
@@ -24,8 +25,9 @@ export function StatusActions({ playerId, noticeNote, noticeOpen, soloNote, solo
     setBusy(true); setMsg("");
     if (file.size > 10 * 1024 * 1024) { setBusy(false); return setMsg("Photo is too large. Max 10 MB."); }
     const db = supabaseBrowser();
-    const path = `${playerId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const up = await db.storage.from("evidence").upload(path, file, { contentType: file.type });
+    const photo = await asJpeg(file);
+    const path = `${playerId}/${Date.now()}-${photo.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const up = await db.storage.from("evidence").upload(path, photo, { contentType: photo.type });
     if (up.error) { setBusy(false); return setMsg("Upload did not go through. Go again."); }
     const { error } = await db.rpc("log_solo", { evidence: path });
     setBusy(false);

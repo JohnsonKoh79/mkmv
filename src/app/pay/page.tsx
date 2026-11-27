@@ -33,7 +33,7 @@ async function Content() {
     return (
       <>
         <div className="bg-ink p-5 text-offwhite" role="status">
-          <p className="h2 !text-3xl">{checking.length ? "We're checking it." : "Nothing to pay."}</p>
+          <p className="h2 !text-3xl">{checking.length ? "Pending for approval." : "Nothing to pay."}</p>
           {checking.length > 0 && <p className="mt-3">A founder confirms your payment. The status shows under Me.</p>}
         </div>
         <Link href="/me?tab=kit" className="btn mt-4 border-ink">My kit</Link>

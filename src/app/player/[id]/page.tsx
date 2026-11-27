@@ -30,7 +30,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
       <div className="border border-ink">
-        <div className="aspect-[4/5] overflow-hidden border-b border-ink">
+        <div className="aspect-square overflow-hidden border-b border-ink">
           {me.photo ? <img src={me.photo} alt={me.nickname} className="h-full w-full object-cover" /> : (
             <div className="flex h-full items-end p-3"><span className="font-display text-7xl leading-none opacity-30" aria-hidden>{me.nickname.slice(0, 1)}</span></div>
           )}

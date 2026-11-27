@@ -118,10 +118,10 @@ async function Content({ params, searchParams }: Props) {
             <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3">
               {b.players.map((pl) => <PlayerCard key={pl.id} id={pl.id} nickname={pl.nickname} level={pl.level} photo={pl.photo} finisher={pl.level >= required} />)}
               {Array.from({ length: hidden }, (_, i) => (
-                <li key={`t${i}`} className="lbl flex aspect-[4/5] items-center justify-center border border-ink text-center">Seat<br />taken</li>
+                <li key={`t${i}`} className="lbl flex aspect-square items-center justify-center border border-ink text-center">Seat<br />taken</li>
               ))}
               {Array.from({ length: openSeats }, (_, i) => (
-                <li key={`o${i}`} className="lbl flex aspect-[4/5] items-center justify-center border border-dashed border-ink text-center">Open<br />seat</li>
+                <li key={`o${i}`} className="lbl flex aspect-square items-center justify-center border border-dashed border-ink text-center">Open<br />seat</li>
               ))}
             </ul>
           </section>
