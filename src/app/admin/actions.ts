@@ -104,3 +104,11 @@ export async function saveWindow(form: FormData) {
   }
   revalidatePath("/admin/setup");
 }
+
+export async function saveGender(id: string, form: FormData) {
+  const { db } = await requireFounder();
+  const v = txt(form, "gender", 1);
+  if (v === "m" || v === "f") await db.from("player").update({ gender: v, cut: v === "f" ? "w" : "m" }).eq("id", id);
+  if (v === "") await db.from("player").update({ gender: null }).eq("id", id);
+  revalidatePath("/admin/setup");
+}

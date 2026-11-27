@@ -108,7 +108,7 @@ async function Content({ params, searchParams }: Props) {
         <section className="flex flex-col gap-3.5">
           <div className="flex items-baseline justify-between gap-3"><h2 className="h2">Missions</h2><p className="lbl">{p.ladder.length} in this project</p></div>
           <p className="text-sm">Every mission unlocks one piece of the {p.title} kit. You only get the kit by showing up.</p>
-          <Missions steps={p.ladder} signedIn={viewer.signedIn} savedCut={viewer.cut} />
+          <Missions steps={p.ladder} signedIn={viewer.signedIn} savedCut={viewer.cut} fixedCut={viewer.fixedCut} />
         </section>
 
         {b && dated && (

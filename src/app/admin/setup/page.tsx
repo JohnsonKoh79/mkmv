@@ -2,7 +2,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { connection } from "next/server";
 import { AdminShell, H, field, btnDark } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
-import { addPlayer, savePayment, savePrice, saveProduct, saveWindow } from "../actions";
+import { addPlayer, saveGender, savePayment, savePrice, saveProduct, saveWindow } from "../actions";
 
 const label = "block uppercase text-xs tracking-widest mb-1";
 
@@ -13,9 +13,9 @@ async function Content() {
     db.from("setting").select("value").eq("key", "payment_instructions").maybeSingle(),
     db.from("product").select("id, name, sizes").order("name"),
     db.from("ladder_step").select("id, level_required, ink, price, product:product_id(name)").order("level_required"),
-    db.from("enrolment").select("referrer_id, player:player_id(id, nickname, real_name, contact)").order("joined_at"),
+    db.from("enrolment").select("referrer_id, player:player_id(id, nickname, real_name, contact, gender)").order("joined_at"),
   ]);
-  const people = (enrol ?? []).map((e) => ({ ...(e.player as unknown as { id: string; nickname: string | null; real_name: string; contact: string | null }), referrer: e.referrer_id as string | null }));
+  const people = (enrol ?? []).map((e) => ({ ...(e.player as unknown as { id: string; nickname: string | null; real_name: string; contact: string | null; gender: string | null }), referrer: e.referrer_id as string | null }));
   const nameOf = new Map(people.map((p) => [p.id, p.nickname ?? p.real_name]));
 
   const { data: times } = await db.from("setting").select("key, value").in("key", ["window_open", "window_close"]);
@@ -77,7 +77,15 @@ async function Content() {
       <H>Players ({people.length} of 12)</H>
       <ul className="text-sm space-y-1">
         {people.map((p) => (
-          <li key={p.id} className="border-b border-ink/30 py-2">{p.nickname ?? "—"} · {p.real_name} · {p.contact}{p.referrer ? ` · referred by ${nameOf.get(p.referrer) ?? "?"}` : ""}</li>
+          <li key={p.id} className="border-b border-ink/30 py-2">
+            {p.nickname ?? "—"} · {p.real_name} · {p.contact}{p.referrer ? ` · referred by ${nameOf.get(p.referrer) ?? "?"}` : ""}
+            <form action={saveGender.bind(null, p.id)} className="mt-1 flex items-center gap-2">
+              <select name="gender" defaultValue={p.gender ?? ""} aria-label="Gender" className={`${field} !w-40`}>
+                <option value="">Gender not set</option><option value="m">Male</option><option value="f">Female</option>
+              </select>
+              <SubmitButton className={btnDark} pendingLabel="Saving…">Save</SubmitButton>
+            </form>
+          </li>
         ))}
       </ul>
     </>

@@ -12,10 +12,11 @@ const readCut = (): Cut | null => {
 const subscribe = (fn: () => void) => { window.addEventListener("storage", fn); return () => window.removeEventListener("storage", fn); };
 
 /** Mission cards. `locked` shows the preview for someone without a seat; otherwise the public catalogue. */
-export function Missions({ steps, signedIn, savedCut, locked = false }: { steps: Step[]; signedIn: boolean; savedCut: Cut; locked?: boolean }) {
+export function Missions({ steps, signedIn, savedCut, fixedCut = false, locked = false }: { steps: Step[]; signedIn: boolean; savedCut: Cut; fixedCut?: boolean; locked?: boolean }) {
   const [picked, setPicked] = useState<Cut | null>(null);
   const stored = useSyncExternalStore(subscribe, readCut, () => null);
-  const cut: Cut = picked ?? (signedIn ? savedCut : stored ?? savedCut);
+  // A member whose gender is known only ever sees their own cut.
+  const cut: Cut = fixedCut ? savedCut : picked ?? (signedIn ? savedCut : stored ?? savedCut);
 
   function pick(c: Cut) {
     setPicked(c);
@@ -25,12 +26,12 @@ export function Missions({ steps, signedIn, savedCut, locked = false }: { steps:
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div role="group" aria-label="Cut" className="flex gap-2">
+      {!fixedCut && <div role="group" aria-label="Cut" className="flex gap-2">
         {([["m", "Men's"], ["w", "Women's"]] as const).map(([c, label]) => (
           <button key={c} type="button" aria-pressed={cut === c} onClick={() => pick(c)}
             className={`min-h-11 flex-1 border border-ink text-xs font-bold uppercase tracking-[0.14em] ${cut === c ? "bg-ink text-offwhite" : ""}`}>{label}</button>
         ))}
-      </div>
+      </div>}
       <div className="flex flex-col gap-2.5">
         {steps.map((s) => {
           const reserved = s.ink === "oxblood";

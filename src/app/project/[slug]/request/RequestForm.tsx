@@ -49,7 +49,7 @@ export function RequestForm({ projectId }: { projectId: string }) {
       p_project: projectId, p_full_name: v("full_name"), p_phone: v("phone"), p_dob: v("dob") || null, p_health: v("health"),
       p_emergency_name: v("emergency_name"), p_emergency_phone: v("emergency_phone"), p_reason: v("reason"),
       p_referrer_name: v("referrer_name"), p_referrer_phone: v("referrer_phone"),
-      p_commit: f.get("commit") === "on", p_consent: f.get("consent") === "on",
+      p_commit: f.get("commit") === "on", p_consent: f.get("consent") === "on", p_gender: v("gender") || null,
     });
     if (error) { lock.current = false; setBusy(false); return setMsg(friendly(error.message)); }
     router.push("/me");
@@ -62,6 +62,17 @@ export function RequestForm({ projectId }: { projectId: string }) {
         <Field id="full_name" label="Full name" required autoComplete="name" maxLength={120} />
         <Field id="phone" label="Phone number" type="tel" required autoComplete="tel" />
         <Field id="dob" label="Date of birth" type="date" required autoComplete="bday" />
+        <fieldset>
+          <legend className="lbl mb-1.5">Gender</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {([["m", "Male"], ["f", "Female"]] as const).map(([value, text]) => (
+              <label key={value} className="flex min-h-12 cursor-pointer items-center justify-center border border-ink text-sm font-bold uppercase tracking-widest has-[:checked]:bg-ink has-[:checked]:text-offwhite">
+                <input type="radio" name="gender" value={value} required className="sr-only" />{text}
+              </label>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[13px]">Sets the cut of your singlet and shorts.</p>
+        </fieldset>
         <p className="text-[13px]">You must be 18 or over. Only the founders see these. Everyone else sees your nickname.</p>
       </Section>
       <Section title="Why you want in">

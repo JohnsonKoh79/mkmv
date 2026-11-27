@@ -43,3 +43,14 @@ body {
 .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
 .h2 { font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: -0.02em; font-size: 26px; line-height: 1.05; transform: skewX(-5deg); transform-origin: left bottom; }
 .btn { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; padding: 0 16px; border: 1px solid; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; text-align: center; }
+
+/* Unlock screen: outlined echo words, and the piece rising out of its silhouette. */
+.outline-word { color: transparent; -webkit-text-stroke: 1px var(--stroke, var(--ink)); opacity: 0.4; }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: reveal 560ms ease-out both; }
+}
+@keyframes reveal {
+  0% { filter: brightness(0); scale: 0.92; }
+  45% { filter: brightness(0); scale: 1; }
+  100% { filter: brightness(1); scale: 1; }
+}

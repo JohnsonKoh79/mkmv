@@ -19,14 +19,14 @@ async function Content({ searchParams }: { searchParams: Promise<{ error?: strin
   const today = klToday();
   const [{ data }, { data: members }] = await Promise.all([
     db.from("join_request")
-      .select("id, kind, status, created_at, player:player_id(nickname, real_name, contact), project:project_id(title), details:request_private(*)")
+      .select("id, kind, status, created_at, player:player_id(nickname, real_name, contact, gender), project:project_id(title), details:request_private(*)")
       .in("status", ["requested", "waitlisted"]).order("created_at"),
     db.from("enrolment").select("player:player_id(id, nickname, real_name)").order("joined_at"),
   ]);
   const people = (members ?? []).map((m) => m.player as unknown as { id: string; nickname: string | null; real_name: string | null });
   const rows = (data ?? []).map((r) => ({
     id: r.id as string, status: r.status as string, kind: r.kind as string, since: String(r.created_at).slice(0, 10),
-    who: r.player as unknown as { nickname: string | null; real_name: string | null; contact: string | null },
+    who: r.player as unknown as { nickname: string | null; real_name: string | null; contact: string | null; gender: string | null },
     project: (r.project as unknown as { title: string } | null)?.title ?? "Next project",
     d: (Array.isArray(r.details) ? r.details[0] : r.details) as Record<string, string | null> | null | undefined,
   }));
@@ -38,6 +38,7 @@ async function Content({ searchParams }: { searchParams: Promise<{ error?: strin
       {r.d && (
         <dl className="mt-2 grid grid-cols-[8rem_1fr] gap-x-2 gap-y-1">
           <dt>Phone</dt><dd>{r.d.phone}</dd>
+          <dt>Gender</dt><dd>{r.who.gender === "f" ? "Female" : r.who.gender === "m" ? "Male" : "Not given"}</dd>
           <dt>Age</dt><dd>{age(String(r.d.date_of_birth), today)} (born {fmtDate(String(r.d.date_of_birth))})</dd>
           <dt>Health</dt><dd className="whitespace-pre-line">{r.d.health_notes ?? "Nothing noted"}</dd>
           <dt>Emergency</dt><dd>{r.d.emergency_name} · {r.d.emergency_phone}</dd>

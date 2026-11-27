@@ -18,11 +18,12 @@ const friendly = (m: string) =>
   : m.includes("duplicate") ? "Already ordered."
   : "That did not go through. Go again.";
 
-export function MyMissions({ steps, level, finisher, orders, savedCut, payment }: {
-  steps: MyStep[]; level: number; finisher: boolean; orders: MyOrder[]; savedCut: Cut; payment: string;
+export function MyMissions({ steps, level, finisher, orders, savedCut, payment, fixedCut = false }: {
+  steps: MyStep[]; level: number; finisher: boolean; orders: MyOrder[]; savedCut: Cut; payment: string; fixedCut?: boolean;
 }) {
   const router = useRouter();
-  const [cut, setCut] = useState<Cut>(savedCut);
+  const [picked, setCut] = useState<Cut>(savedCut);
+  const cut = fixedCut ? savedCut : picked;
   const [openId, setOpenId] = useState<string | null>(null);
   const [size, setSize] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,12 +50,12 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment }
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div role="group" aria-label="Cut" className="flex gap-2">
+      {!fixedCut && <div role="group" aria-label="Cut" className="flex gap-2">
         {([["m", "Men's"], ["w", "Women's"]] as const).map(([c, label]) => (
           <button key={c} type="button" aria-pressed={cut === c} onClick={() => pickCut(c)}
             className={`min-h-11 flex-1 border border-ink text-xs font-bold uppercase tracking-[0.14em] ${cut === c ? "bg-ink text-offwhite" : ""}`}>{label}</button>
         ))}
-      </div>
+      </div>}
 
       {done && (
         <div role="status" className="wipe bg-ink p-5 text-offwhite">
@@ -84,8 +85,13 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment }
           const buyable = s.isFree || s.price != null;
           return (
             <article key={s.id} className={`flex items-start gap-3 border bg-offwhite p-3 ${tone} ${state === "locked" ? "border-dashed" : ""}`}>
-              <Image src={kitImage(s, cut)} alt={reached ? rewardName(s) : "Locked piece"} width={184} height={184} sizes="92px"
-                className={`h-[92px] w-[92px] shrink-0 object-contain ${!reached ? "opacity-90 brightness-0" : state === "held" ? "opacity-40" : ""}`} />
+              <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden">
+                <Image src={kitImage(s, cut)} alt={reached ? rewardName(s) : "Locked piece"} width={184} height={184} sizes="92px"
+                  className={`h-full w-full object-contain ${!reached ? "opacity-90 brightness-0" : state === "held" ? "opacity-40" : ""}`} />
+                {(state === "complete" || state === "ordered") && (
+                  <span aria-hidden className={`absolute -left-2 -right-2 bottom-2 -rotate-[8deg] py-0.5 text-center text-[11px] font-extrabold uppercase tracking-[0.14em] text-offwhite ${fill}`}>Unlocked</span>
+                )}
+              </div>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="lbl !text-[10px]">{s.missionLabel}</p>

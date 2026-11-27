@@ -36,7 +36,7 @@ async function Preview() {
       {p && (
         <section className="mt-8 flex flex-col gap-3.5">
           <h2 className="h2">Missions</h2>
-          <Missions steps={p.ladder} signedIn savedCut={viewer.cut} locked />
+          <Missions steps={p.ladder} signedIn savedCut={viewer.cut} fixedCut={viewer.fixedCut} locked />
         </section>
       )}
     </>
@@ -121,7 +121,7 @@ async function Content() {
 
       <section className="mt-6 flex flex-col gap-3.5">
         <div className="flex items-baseline justify-between gap-3"><h2 className="h2">Missions</h2><p className="lbl">{complete} of {steps.length} complete</p></div>
-        <MyMissions steps={steps} level={lvl} finisher={fin} orders={mine} savedCut={viewer.cut} payment={pay?.value ?? ""} />
+        <MyMissions steps={steps} level={lvl} finisher={fin} orders={mine} savedCut={viewer.cut} fixedCut={viewer.fixedCut} payment={pay?.value ?? ""} />
       </section>
     </>
   );
