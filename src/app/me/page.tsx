@@ -63,7 +63,7 @@ async function Content({ searchParams }: { searchParams: Promise<{ tab?: string 
         <div className="min-w-0">
           <p className="lbl">MKMV player</p>
           <h1 className="h2 mt-1 break-words !text-4xl">{name}</h1>
-          {!p?.nickname && <Link href="/me?tab=account" className="flex min-h-11 items-center text-xs font-bold uppercase tracking-widest underline">Set up profile</Link>}
+          <Link href="/me?tab=account" scroll={false} className="flex min-h-11 items-center text-xs font-bold uppercase tracking-widest underline">{p?.nickname ? "Edit profile" : "Set up profile"}</Link>
         </div>
       </section>
 

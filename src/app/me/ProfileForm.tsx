@@ -25,6 +25,21 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
   const crop = useRef<Crop | null>(null);
   const [saved, setSaved] = useState(false);
 
+  function choose(f: File) {
+    setSaved(false); setMsg("");
+    setFile(f); setPreview(URL.createObjectURL(f));
+  }
+
+  /** Re-position or zoom the photo already saved, without picking it again. */
+  async function adjust() {
+    if (!preview) return;
+    setSaved(false); setMsg("");
+    try {
+      const blob = await (await fetch(preview)).blob();
+      choose(new File([blob], "photo.jpg", { type: "image/jpeg" }));
+    } catch { setMsg("Could not open the photo. Choose it again."); }
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(""); setSaved(false);
@@ -62,18 +77,25 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
             <span className="flex h-full items-center justify-center uppercase text-sm font-bold tracking-wide">Add photo</span>}
         </button>
         )}
+        {!file && preview && (
+          <div className="flex gap-5">
+            <button type="button" onClick={() => fileRef.current?.click()} className="min-h-11 text-xs font-bold uppercase tracking-widest underline">Change photo</button>
+            <button type="button" onClick={adjust} className="min-h-11 text-xs font-bold uppercase tracking-widest underline">Adjust photo</button>
+          </div>
+        )}
         <input ref={fileRef} type="file" accept="image/*" className="sr-only" tabIndex={-1}
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} />
+          // Cleared afterwards, so picking the same photo again still counts.
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) choose(f); e.target.value = ""; }} />
       </div>
 
       <div>
         <label htmlFor="nick" className="block uppercase text-xs tracking-widest mb-1">Nickname</label>
-        <input id="nick" value={nick} onChange={(e) => setNick(e.target.value)} maxLength={24} autoComplete="nickname"
+        <input id="nick" value={nick} onChange={(e) => { setNick(e.target.value); setSaved(false); }} maxLength={24} autoComplete="nickname"
           className="w-full min-h-11 border border-ink bg-offwhite px-3 py-2 text-base" />
       </div>
 
       <label className="flex items-start gap-3 min-h-11 cursor-pointer">
-        <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} className="mt-1 h-6 w-6 shrink-0 accent-black" />
+        <input type="checkbox" checked={ok} onChange={(e) => { setOk(e.target.checked); setSaved(false); }} className="mt-1 h-6 w-6 shrink-0 accent-black" />
         <span>Put my nickname, photo and level on the public site.</span>
       </label>
 
