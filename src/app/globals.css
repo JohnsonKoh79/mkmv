@@ -14,8 +14,10 @@
   --font-display: var(--font-archivo), Arial, Helvetica, sans-serif;
 }
 
-/* No rubber-band scrolling past the end of the page. */
-html { overscroll-behavior-y: none; background: var(--offwhite); }
+/* The document never scrolls; #scroller does. */
+html { height: 100%; overflow: hidden; overscroll-behavior-y: none; background: var(--offwhite); }
+#scroller > * { flex-shrink: 0; }
+#scroller > main { flex-grow: 1; }
 
 body {
   background: var(--offwhite);
