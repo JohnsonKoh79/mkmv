@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { kitImage, rewardName, type Cut } from "@/lib/kit";
@@ -29,8 +29,14 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, fixedCut 
   const [size, setSize] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-  const [done, setDone] = useState<{ price: number; label: string } | null>(null);
+  const [done, setDone] = useState<{ stepId: string; price: number; label: string } | null>(null);
   const lock = useRef(false);
+
+  // Next keeps a page's state when you navigate away, so the "Ordered" box must be cleared on leaving.
+  useEffect(() => () => setDone(null), []);
+  // And it goes as soon as the order no longer waits on the member (proof sent or confirmed).
+  const placed = done && orders.find((o) => o.stepId === done.stepId);
+  const showDone = done && (!placed || (done.price > 0 ? needsPayment(placed) : placed.status === "preordered"));
 
   function pickCut(c: Cut) {
     setCut(c);
@@ -44,7 +50,7 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, fixedCut 
     const { error } = await supabaseBrowser().rpc("place_order", { step: s.id, p_size: size, p_cut: cut });
     lock.current = false; setBusy(false);
     if (error) return setMsg(friendly(error.message));
-    setDone({ price: s.isFree ? 0 : s.price ?? 0, label: rewardName(s) });
+    setDone({ stepId: s.id, price: s.isFree ? 0 : s.price ?? 0, label: rewardName(s) });
     setOpenId(null);
     router.refresh();
   }
@@ -58,7 +64,7 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, fixedCut 
         ))}
       </div>}
 
-      {done && (
+      {showDone && (
         <div role="status" className="wipe bg-ink p-5 text-offwhite">
           <p className="lbl">Ordered</p>
           <p className="h2 mt-2 !text-2xl">{done.label}</p>
