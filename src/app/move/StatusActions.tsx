@@ -29,7 +29,7 @@ export function StatusActions({ playerId, noticeNote, noticeOpen, soloNote, solo
     if (up.error) { setBusy(false); return setMsg("Upload did not go through. Go again."); }
     const { error } = await db.rpc("log_solo", { evidence: path });
     setBusy(false);
-    if (error) return setMsg(error.message.includes("already") ? "Already logged today." : "Solo counts on Wednesdays only.");
+    if (error) return setMsg(error.message.includes("already") ? "Already logged today." : error.message.includes("outside window") ? "Outside the Wednesday window." : "Solo counts on Wednesdays only.");
     router.refresh();
   }
 

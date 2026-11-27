@@ -2,7 +2,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { connection } from "next/server";
 import { AdminShell, H, field, btnDark } from "@/components/AdminShell";
 import { requireFounder } from "@/lib/founder";
-import { addPlayer, savePayment, savePrice, saveProduct } from "../actions";
+import { addPlayer, savePayment, savePrice, saveProduct, saveWindow } from "../actions";
 
 const label = "block uppercase text-xs tracking-widest mb-1";
 
@@ -18,8 +18,19 @@ async function Content() {
   const people = (enrol ?? []).map((e) => ({ ...(e.player as unknown as { id: string; nickname: string | null; real_name: string; contact: string | null }), referrer: e.referrer_id as string | null }));
   const nameOf = new Map(people.map((p) => [p.id, p.nickname ?? p.real_name]));
 
+  const { data: times } = await db.from("setting").select("key, value").in("key", ["window_open", "window_close"]);
+  const time = (k: string, d: string) => times?.find((t) => t.key === k)?.value ?? d;
+
   return (
     <>
+      <H>Wednesday window (Malaysia time)</H>
+      <form action={saveWindow} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+        <div><label className={label} htmlFor="window_open">Opens</label><input id="window_open" name="window_open" type="time" required defaultValue={time("window_open", "04:30")} className={field} /></div>
+        <div><label className={label} htmlFor="window_close">Closes</label><input id="window_close" name="window_close" type="time" required defaultValue={time("window_close", "23:59")} className={field} /></div>
+        <SubmitButton className={btnDark} pendingLabel="Saving…">Save</SubmitButton>
+      </form>
+      <p className="mt-2 text-sm">Applies to scan check-in and solo upload.</p>
+
       <H>Payment instructions</H>
       <form action={savePayment} className="space-y-3">
         <textarea name="value" rows={4} defaultValue={pay?.value ?? ""} className={field} aria-label="Payment instructions" />

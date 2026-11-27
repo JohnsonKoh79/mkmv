@@ -7,6 +7,7 @@ import { LevelBar } from "@/components/LevelBar";
 import { MyMissions, type MyOrder, type MyStep } from "@/components/MyMissions";
 import { Missions } from "@/components/Missions";
 import { StatusActions } from "./StatusActions";
+import { ScanButton } from "./ScanButton";
 import { getMe, klToday } from "@/lib/me";
 import { getPublic } from "@/lib/public";
 import { getViewer } from "@/lib/viewer";
@@ -62,6 +63,10 @@ async function Content() {
     db.from("order").select("id, ladder_step_id, size, status, price").eq("player_id", ctx.playerId).order("created_at"),
     db.from("setting").select("value").eq("key", "payment_instructions").maybeSingle(),
   ]);
+  const { data: times } = await db.from("setting").select("key, value").in("key", ["window_open", "window_close"]);
+  const opens = times?.find((t) => t.key === "window_open")?.value ?? "04:30";
+  const closes = times?.find((t) => t.key === "window_close")?.value ?? "23:59";
+  const clock = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Kuala_Lumpur" }).format(new Date());
 
   const today = klToday();
   const { season, rows } = ctx;
@@ -71,7 +76,8 @@ async function Content() {
   const todayRow = rows.find((r) => r.date === today);
   const isSessionDay = season.dates.includes(today);
   const logged = Boolean(todayRow && todayRow.type !== "absent");
-  const soloOpen = isSessionDay && !logged;
+  const inWindow = isSessionDay && clock >= opens && clock <= closes;
+  const soloOpen = inWindow && !logged;
   const noticeWeek = season.dates.find((d) => new Date(ctx.noticeDeadlines[d]) > new Date());
   const noticeRow = noticeWeek ? rows.find((r) => r.date === noticeWeek) : undefined;
   const noticeOpen = Boolean(noticeWeek) && !noticeRow;
@@ -79,7 +85,7 @@ async function Content() {
     : noticeRow?.type === "absent" && noticeRow.noticeGiven ? `You're out for ${wednesday(noticeWeek)}.`
     : noticeRow ? "Already recorded."
     : `Closes ${closesLabel(ctx.noticeDeadlines[noticeWeek])}.`;
-  const soloNote = logged ? "Logged today." : isSessionDay ? "Counts straight away." : "Training somewhere else? Opens on Wednesday.";
+  const soloNote = logged ? "Logged today." : inWindow ? "Training somewhere else? Counts straight away." : `Training somewhere else? Opens Wednesday ${opens}.`;
 
   const sizes = new Map((extra ?? []).map((e) => [e.id as string, (e.product as unknown as { sizes: string[] } | null)?.sizes ?? []]));
   const batch = projects.flatMap((p) => p.batches).find((b) => b.id === ctx.seasonId);
@@ -107,7 +113,9 @@ async function Content() {
       <section className="mt-6 flex flex-col gap-3 bg-ink p-5 text-offwhite">
         <p className="lbl">This week</p>
         <p className="h2 !text-[28px] !leading-none">{week ? `${wednesday(week)} · 5:00` : "Batch finished"}</p>
-        {week && <p className="text-sm opacity-80">Show up and a founder ticks you in. Nothing to do here.</p>}
+        {week && <p className="text-sm opacity-80">At the session, scan the founder&apos;s code.</p>}
+        <ScanButton enabled={inWindow && !logged} />
+        <p className="text-xs opacity-80">{logged ? "You're in for this week." : inWindow ? "Point your camera at the code." : `Opens Wednesday ${opens}. Nothing logged by the end of the day is a miss.`}</p>
         <StatusActions playerId={ctx.playerId} noticeNote={noticeNote} noticeOpen={noticeOpen} soloNote={soloNote} soloOpen={soloOpen} />
       </section>
 

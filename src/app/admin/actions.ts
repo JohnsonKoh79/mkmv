@@ -82,3 +82,25 @@ export async function decideRequest(id: string, decision: "waitlist_next_batch" 
   if (error) redirect(`/admin/requests?error=${encodeURIComponent(error.message)}`);
   revalidatePath("/admin/requests");
 }
+
+export async function openCheckin(id: string) {
+  const { db } = await requireFounder();
+  await db.rpc("open_checkin", { p_date: id });
+  revalidatePath(`/admin/checkin/${id}`);
+}
+
+export async function closeCheckin(id: string) {
+  const { db } = await requireFounder();
+  await db.rpc("close_checkin", { p_date: id });
+  revalidatePath(`/admin/checkin/${id}`);
+}
+
+export async function saveWindow(form: FormData) {
+  const { db } = await requireFounder();
+  const open = txt(form, "window_open", 5), close = txt(form, "window_close", 5);
+  const ok = (v: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
+  if (ok(open) && ok(close) && open < close) {
+    await db.from("setting").upsert([{ key: "window_open", value: open }, { key: "window_close", value: close }]);
+  }
+  revalidatePath("/admin/setup");
+}

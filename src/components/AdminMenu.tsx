@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 const ITEMS = [
   ["/admin", "Today"],
+  ["/admin/checkin", "Check-in"],
   ["/admin/roll-call", "Roll call"],
   ["/admin/orders", "Orders"],
   ["/admin/flags", "Flags"],
@@ -15,9 +16,9 @@ export function AdminMenu({ pending = 0 }: { pending?: number }) {
   const path = usePathname();
   return (
     <nav aria-label="Admin" className="border-t border-offwhite/30">
-      <ul className="mx-auto grid max-w-3xl grid-cols-3 sm:grid-cols-6">
+      <ul className="mx-auto grid max-w-3xl grid-cols-4 sm:grid-cols-7">
         {ITEMS.map(([href, label]) => {
-          const on = path === href;
+          const on = href === "/admin" ? path === href : path.startsWith(href);
           return (
             <li key={href}>
               <Link href={href} aria-current={on ? "page" : undefined}

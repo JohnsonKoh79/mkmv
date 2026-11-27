@@ -33,7 +33,8 @@ async function Content() {
       <section className="border border-ink p-4">
         <p className="uppercase text-xs font-bold tracking-widest">Next session</p>
         <p className="font-display mt-2 text-3xl"><span className="slant">{next ? fmtDate(next.date) : "None left"}</span></p>
-        <Link href="/admin/roll-call" className="mt-4 flex min-h-12 items-center justify-center bg-ink text-offwhite uppercase text-sm font-bold tracking-widest">Roll call</Link>
+        <Link href={next ? `/admin/checkin/${next.id}` : "/admin/checkin"} className="mt-4 flex min-h-12 items-center justify-center bg-ink text-offwhite uppercase text-sm font-bold tracking-widest">Check-in QR</Link>
+        <Link href="/admin/roll-call" className="mt-2 flex min-h-12 items-center justify-center border border-ink uppercase text-sm font-bold tracking-widest">Roll call</Link>
       </section>
       <dl className="mt-3 grid grid-cols-3 gap-3">
         {tiles.map(([href, label, n]) => (
