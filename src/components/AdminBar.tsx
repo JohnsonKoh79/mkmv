@@ -3,7 +3,15 @@ import { Suspense } from "react";
 import { adminSignOut } from "@/app/admin/actions";
 import { AdminMenu } from "@/components/AdminMenu";
 import { SubmitButton } from "@/components/SubmitButton";
+import { supabaseServer } from "@/lib/supabase/server";
 /* eslint-disable @next/next/no-img-element */
+
+/** The menu with the number of requests waiting for a decision. Row-level security returns 0 to non-founders. */
+async function MenuWithCount() {
+  const db = await supabaseServer("admin");
+  const { count } = await db.from("join_request").select("*", { count: "exact", head: true }).eq("status", "requested");
+  return <AdminMenu pending={count ?? 0} />;
+}
 
 /** Admin's own chrome. Shares nothing with the player pages except the logo. */
 export function AdminBar({ menu = true }: { menu?: boolean }) {
@@ -20,7 +28,7 @@ export function AdminBar({ menu = true }: { menu?: boolean }) {
           </form>
         )}
       </div>
-      {menu && <Suspense fallback={<div className="h-12" />}><AdminMenu /></Suspense>}
+      {menu && <Suspense fallback={<div className="h-12" />}><MenuWithCount /></Suspense>}
     </header>
   );
 }
