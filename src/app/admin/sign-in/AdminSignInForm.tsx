@@ -17,7 +17,7 @@ export function AdminSignInForm() {
     e.preventDefault();
     if (lock.current) return;
     lock.current = true; setBusy(true); setMsg("");
-    const db = supabaseBrowser();
+    const db = supabaseBrowser("admin");
     const { error } = await db.auth.signInWithPassword({ email: toEmail(id), password });
     if (error) {
       lock.current = false; setBusy(false);

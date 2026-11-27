@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 
 /** Every admin page and action starts here. RLS enforces the same rule in the database. */
 export async function requireFounder() {
-  const db = await supabaseServer();
+  const db = await supabaseServer("admin");
   const { data: { user } } = await db.auth.getUser();
   if (!user) redirect("/admin/sign-in");
   const { data: me } = await db.from("player").select("id, role").eq("auth_user_id", user.id).maybeSingle();

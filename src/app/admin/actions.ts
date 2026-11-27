@@ -64,7 +64,7 @@ export async function addPlayer(form: FormData): Promise<void> {
 
 export async function adminSignOut() {
   const { db } = await requireFounder();
-  await db.auth.signOut();
+  await db.auth.signOut({ scope: "local" });
   redirect("/admin/sign-in");
 }
 

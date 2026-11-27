@@ -20,7 +20,7 @@ export function RollCall({ sessionDateId, players }: { sessionDateId: string; pl
 
   async function save() {
     setBusy(true); setErr("");
-    const { error } = await supabaseBrowser().rpc("save_roll_call", { sd: sessionDateId, marks });
+    const { error } = await supabaseBrowser("admin").rpc("save_roll_call", { sd: sessionDateId, marks });
     setBusy(false);
     if (error) return setErr("Could not save. Try again.");
     setSaved(true);

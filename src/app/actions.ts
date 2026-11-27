@@ -13,6 +13,6 @@ export async function markUnlockSeen(stepId: string) {
 
 export async function signOut() {
   const db = await supabaseServer();
-  await db.auth.signOut();
+  await db.auth.signOut({ scope: "local" });
   redirect("/");
 }

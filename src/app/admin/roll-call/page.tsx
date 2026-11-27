@@ -1,18 +1,13 @@
 import { connection } from "next/server";
-import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { RollCall, type RollPlayer } from "./RollCall";
 import { fmtDate } from "@/lib/format";
 import { klToday } from "@/lib/me";
-import { supabaseServer } from "@/lib/supabase/server";
+import { requireFounder } from "@/lib/founder";
 
 async function Content() {
   await connection(); // per-request: depends on who is signed in and the current time
-  const db = await supabaseServer();
-  const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/admin/sign-in");
-  const { data: me } = await db.from("player").select("role").eq("auth_user_id", user.id).maybeSingle();
-  if (me?.role !== "founder") redirect("/");
+  const { db } = await requireFounder();
 
   const { data: group } = await db.from("group").select("id, season:season_id(id, project:project_id(name))").limit(1).maybeSingle();
   if (!group) return <p className="mt-6">No group set up yet.</p>;
