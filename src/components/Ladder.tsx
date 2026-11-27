@@ -23,7 +23,7 @@ export function Ladder({ steps, level, compact = false }: { steps: LadderStep[];
               <span className={`h-4 w-4 shrink-0 border border-ink ${unlocked ? (s.ink === "oxblood" ? "bg-oxblood border-oxblood" : "bg-ink") : "border-dashed"}`} aria-hidden />
               <span className="flex-1 py-2">
                 <span className="block font-bold uppercase text-sm">{s.product} <span className="font-normal tracking-wide">· {s.ink}</span></span>
-                {unlocked && s.ink === "oxblood" && !s.isFree && <span className="block text-xs">Available when you finish</span>}
+                {unlocked && s.release === "on_finish" && !s.isFree && <span className="block text-xs">Available when you finish</span>}
               </span>
               <span className="uppercase text-xs tracking-widest tabular-nums">{unlocked ? "Unlocked" : `LV ${s.level}`}</span>
             </li>
@@ -51,8 +51,8 @@ export function Ladder({ steps, level, compact = false }: { steps: LadderStep[];
               ? "Yours when you finish"
               : state === "unlocked"
                 ? "Unlocked"
-                : reserved
-                  ? "Finishers only"
+                : s.isFree
+                  ? "Earned by finishing"
                   : "";
         return (
           <li

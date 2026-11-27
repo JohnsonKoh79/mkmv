@@ -134,7 +134,7 @@ async function Content({ params, searchParams }: Props) {
               `${required} sessions. ${b?.dates.length || 14} Wednesdays. Show up.`,
               `${(b?.dates.length || 14) - required} misses allowed. Say so before Tuesday 21:00.`,
               "Every session is +1 level. Nothing resets.",
-              "Finish. The oxblood kit is earned.",
+              "Finish. The Reserved singlet is earned.",
             ].map((r) => <li key={r} className="border-b border-ink/40 py-3 font-bold">{r}</li>)}
           </ul>
         </section>

@@ -23,7 +23,7 @@ async function UnlockContent() {
   ]);
   const hasCut = (data?.product as unknown as { has_cut: boolean } | null)?.has_cut ?? false;
   const reserved = step.ink === "oxblood";
-  const note = step.isFree ? "Earned by finishing." : reserved ? "Yours to buy when you finish." : "Yours to buy now.";
+  const note = step.isFree ? "Earned by finishing." : "Yours to buy now.";
 
   return (
     <UnlockMoment key={step.id} level={step.level} product={step.product} reserved={reserved} note={note}
