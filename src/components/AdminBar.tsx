@@ -9,8 +9,11 @@ import { supabaseServer } from "@/lib/supabase/server";
 /** The menu with the number of requests waiting for a decision. Row-level security returns 0 to non-founders. */
 async function MenuWithCount() {
   const db = await supabaseServer("admin");
-  const { count } = await db.from("join_request").select("*", { count: "exact", head: true }).eq("status", "requested");
-  return <AdminMenu pending={count ?? 0} />;
+  const [requests, proofs] = await Promise.all([
+    db.from("join_request").select("*", { count: "exact", head: true }).eq("status", "requested"),
+    db.from("order").select("*", { count: "exact", head: true }).eq("status", "preordered").not("proof_url", "is", null),
+  ]);
+  return <AdminMenu pending={requests.count ?? 0} payments={proofs.count ?? 0} />;
 }
 
 /** Admin's own chrome. Shares nothing with the player pages except the logo. */

@@ -8,6 +8,7 @@ import { MyMissions, type MyOrder, type MyStep } from "@/components/MyMissions";
 import { Missions } from "@/components/Missions";
 import { StatusActions } from "./StatusActions";
 import { ScanButton } from "./ScanButton";
+import { PendingBanner } from "@/components/PendingBanner";
 import { getMe, klToday } from "@/lib/me";
 import { getPublic } from "@/lib/public";
 import { getViewer } from "@/lib/viewer";
@@ -56,12 +57,11 @@ async function Content() {
   if (ctx.unseen.length) redirect("/unlock");
 
   const db = await supabaseServer();
-  const [projects, viewer, { data: extra }, { data: orders }, { data: pay }] = await Promise.all([
+  const [projects, viewer, { data: extra }, { data: orders }] = await Promise.all([
     getPublic(),
     getViewer(),
     db.from("ladder_step").select("id, product:product_id(sizes)").eq("season_id", ctx.seasonId),
-    db.from("order").select("id, ladder_step_id, size, status, price").eq("player_id", ctx.playerId).order("created_at"),
-    db.from("setting").select("value").eq("key", "payment_instructions").maybeSingle(),
+    db.from("order").select("id, ladder_step_id, size, status, price, proof_url").eq("player_id", ctx.playerId).order("created_at"),
   ]);
   const { data: times } = await db.from("setting").select("key, value").in("key", ["window_open", "window_close"]);
   const opens = times?.find((t) => t.key === "window_open")?.value ?? "04:30";
@@ -90,11 +90,12 @@ async function Content() {
   const sizes = new Map((extra ?? []).map((e) => [e.id as string, (e.product as unknown as { sizes: string[] } | null)?.sizes ?? []]));
   const batch = projects.flatMap((p) => p.batches).find((b) => b.id === ctx.seasonId);
   const steps: MyStep[] = (batch?.ladder ?? []).map((s) => ({ ...s, sizes: sizes.get(s.id) ?? [] }));
-  const mine: MyOrder[] = (orders ?? []).map((o) => ({ id: o.id, stepId: o.ladder_step_id, size: o.size, status: o.status, price: Number(o.price) }));
+  const mine: MyOrder[] = (orders ?? []).map((o) => ({ id: o.id, stepId: o.ladder_step_id, size: o.size, status: o.status, price: Number(o.price), proof: Boolean(o.proof_url) }));
   const complete = steps.filter((s) => ["complete", "held", "ordered"].includes(missionState(s, steps, lvl, fin, mine.some((o) => o.stepId === s.id)))).length;
 
   return (
     <>
+      <PendingBanner playerId={ctx.playerId} />
       <section className="flex flex-col gap-3">
         <Link href={`/project/${ctx.projectSlug}`} className="lbl flex min-h-11 items-center underline">
           {ctx.projectLabel} · {ctx.projectTitle} · Batch {ctx.batchNumber}
@@ -121,7 +122,7 @@ async function Content() {
 
       <section className="mt-6 flex flex-col gap-3.5">
         <div className="flex items-baseline justify-between gap-3"><h2 className="h2">Missions</h2><p className="lbl">{complete} of {steps.length} complete</p></div>
-        <MyMissions steps={steps} level={lvl} finisher={fin} orders={mine} savedCut={viewer.cut} fixedCut={viewer.fixedCut} payment={pay?.value ?? ""} />
+        <MyMissions steps={steps} level={lvl} finisher={fin} orders={mine} savedCut={viewer.cut} fixedCut={viewer.fixedCut} />
       </section>
     </>
   );

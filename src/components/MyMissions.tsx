@@ -1,15 +1,16 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { kitImage, rewardName, type Cut } from "@/lib/kit";
 import { missionState } from "@/lib/missions";
-import { ORDER_STATUS, rm } from "@/lib/orders";
+import { needsPayment, orderStatus, rm } from "@/lib/orders";
 import type { Step } from "@/lib/public";
 
 export type MyStep = Step & { sizes: string[] };
-export interface MyOrder { id: string; stepId: string; size: string; status: string; price: number }
+export interface MyOrder { id: string; stepId: string; size: string; status: string; price: number; proof: boolean }
 
 const friendly = (m: string) =>
   m.includes("finish first") ? "Finish first. This one is earned."
@@ -18,8 +19,8 @@ const friendly = (m: string) =>
   : m.includes("duplicate") ? "Already ordered."
   : "That did not go through. Go again.";
 
-export function MyMissions({ steps, level, finisher, orders, savedCut, payment, fixedCut = false }: {
-  steps: MyStep[]; level: number; finisher: boolean; orders: MyOrder[]; savedCut: Cut; payment: string; fixedCut?: boolean;
+export function MyMissions({ steps, level, finisher, orders, savedCut, fixedCut = false }: {
+  steps: MyStep[]; level: number; finisher: boolean; orders: MyOrder[]; savedCut: Cut; fixedCut?: boolean;
 }) {
   const router = useRouter();
   const [picked, setCut] = useState<Cut>(savedCut);
@@ -28,7 +29,7 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment, 
   const [size, setSize] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-  const [done, setDone] = useState<{ ref: string; price: number; label: string } | null>(null);
+  const [done, setDone] = useState<{ price: number; label: string } | null>(null);
   const lock = useRef(false);
 
   function pickCut(c: Cut) {
@@ -40,10 +41,10 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment, 
   async function order(s: MyStep) {
     if (lock.current || !size) return;
     lock.current = true; setBusy(true); setMsg("");
-    const { data, error } = await supabaseBrowser().rpc("place_order", { step: s.id, p_size: size, p_cut: cut });
+    const { error } = await supabaseBrowser().rpc("place_order", { step: s.id, p_size: size, p_cut: cut });
     lock.current = false; setBusy(false);
     if (error) return setMsg(friendly(error.message));
-    setDone({ ref: String(data).slice(0, 6).toUpperCase(), price: s.isFree ? 0 : s.price ?? 0, label: rewardName(s) });
+    setDone({ price: s.isFree ? 0 : s.price ?? 0, label: rewardName(s) });
     setOpenId(null);
     router.refresh();
   }
@@ -64,11 +65,9 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment, 
           {done.price > 0 ? (
             <>
               <p className="mt-3 text-3xl font-extrabold tabular-nums">{rm(done.price)}</p>
-              <p className="mt-2 whitespace-pre-line text-sm">{payment}</p>
-              <p className="mt-2 text-sm font-bold">Reference: {done.ref}</p>
+              <Link href="/pay" className="btn mt-4 border-offwhite bg-offwhite text-ink">Proceed to payment</Link>
             </>
-          ) : <p className="mt-3 text-sm">Nothing to pay. Earned. Reference: {done.ref}</p>}
-          <p className="mt-3 text-xs opacity-80">Also under Me.</p>
+          ) : <p className="mt-3 text-sm">Nothing to pay. Earned. A founder will confirm it.</p>}
         </div>
       )}
 
@@ -103,8 +102,16 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment, 
                   {Array.from({ length: s.level }, (_, i) => <span key={i} className={`h-1.5 flex-1 border border-current ${i < level ? "bg-current" : ""}`} />)}
                 </div>
 
-                {state === "ordered" && mine && <p className="text-[13px] font-bold">Size {mine.size} · {ORDER_STATUS[mine.status] ?? mine.status}</p>}
-                {state === "held" && <p className="text-[13px]">Yours to buy when you finish.</p>}
+                {state === "ordered" && mine && (
+                  <>
+                    <p className="text-[13px] font-bold">Size {mine.size} · {orderStatus(mine)}</p>
+                    {needsPayment(mine) && <Link href="/pay" className="flex min-h-11 items-center justify-center border border-ink bg-ink px-4 text-[13px] font-bold uppercase tracking-[0.14em] text-offwhite">Proceed to payment</Link>}
+                    {mine.status === "preordered" && <Link href="/me?tab=kit" className="flex min-h-11 items-center text-xs font-bold uppercase tracking-widest underline">Change size</Link>}
+                  </>
+                )}
+                {state === "held" && (
+                  <p className="text-[13px]">{s.price != null ? <><b>{rm(s.price)}</b> to buy. </> : null}Opens when you finish.</p>
+                )}
                 {(state === "progress" || state === "locked") && (
                   <p className="text-[13px] font-bold">
                     {toGo} {toGo === 1 ? "session" : "sessions"} to go.{s.isFree ? " Earned when you finish." : s.release === "on_finish" ? " Yours to buy when you finish." : ""}
@@ -128,7 +135,7 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, payment, 
                     {s.hasCut && <p className="text-xs">Cut: {cut === "w" ? "Women's" : "Men's"}</p>}
                     <button type="button" disabled={!size || busy} onClick={() => order(s)}
                       className="min-h-11 border border-ink bg-ink px-4 text-[13px] font-bold uppercase tracking-[0.14em] text-offwhite disabled:opacity-50">
-                      {busy ? "Ordering…" : !size ? "Pick a size" : s.isFree ? "Confirm" : `Confirm · ${rm(s.price ?? 0)}`}
+                      {busy ? "Ordering…" : !size ? "Pick a size" : s.isFree ? "Confirm" : `Order · ${rm(s.price ?? 0)}`}
                     </button>
                     <button type="button" onClick={() => setOpenId(null)} className="min-h-11 text-xs font-bold uppercase tracking-widest underline">Not now</button>
                     {msg && <p role="alert" className="border border-current p-2 text-[13px]">{msg}</p>}

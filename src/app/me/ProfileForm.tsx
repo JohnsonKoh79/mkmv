@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { squarePhoto } from "@/lib/photo";
+import { cropPhoto, type Crop } from "@/lib/photo";
+import { Cropper } from "./Cropper";
 
 const friendly = (m: string) =>
   m.includes("player_nickname_unique") || m.includes("duplicate") ? "That nickname is taken. Pick another."
@@ -20,6 +21,7 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
   const [preview, setPreview] = useState<string | null>(photo);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const crop = useRef<Crop | null>(null);
   const [saved, setSaved] = useState(false);
 
   async function save(e: React.FormEvent) {
@@ -29,7 +31,7 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
     let path: string | null = null;
     if (file) {
       try {
-        const blob = await squarePhoto(file);
+        const blob = await cropPhoto(file, crop.current ?? { cx: 0, cy: 0, zoom: 1 });
         path = `${playerId}/avatar-${Date.now()}.jpg`;
         const up = await db.storage.from("avatars").upload(path, blob, { contentType: "image/jpeg" });
         if (up.error) throw up.error;
@@ -45,10 +47,17 @@ export function ProfileForm({ playerId, nickname, photo, consent }: { playerId: 
     <form onSubmit={save} className="mt-6 space-y-6">
       <div>
         <p className="uppercase text-xs tracking-widest mb-2">Photo</p>
+        {file && preview ? (
+          <>
+            <Cropper key={preview} src={preview} onChange={(c) => { crop.current = c; }} />
+            <button type="button" onClick={() => fileRef.current?.click()} className="min-h-11 text-xs font-bold uppercase tracking-widest underline">Choose another</button>
+          </>
+        ) : (
         <button type="button" onClick={() => fileRef.current?.click()} className="block w-full max-w-xs aspect-[4/5] border border-ink overflow-hidden" aria-label="Choose photo">
           {preview ? <img src={preview} alt="Your photo" className="w-full h-full object-cover" /> :
             <span className="flex h-full items-center justify-center uppercase text-sm font-bold tracking-wide">Add photo</span>}
         </button>
+        )}
         <input ref={fileRef} type="file" accept="image/*" className="sr-only" tabIndex={-1}
           onChange={(e) => { const f = e.target.files?.[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} />
       </div>

@@ -12,7 +12,7 @@ const ITEMS = [
   ["/admin/setup", "Setup"],
 ] as const;
 
-export function AdminMenu({ pending = 0 }: { pending?: number }) {
+export function AdminMenu({ pending = 0, payments = 0 }: { pending?: number; payments?: number }) {
   const path = usePathname();
   return (
     <nav aria-label="Admin" className="border-t border-offwhite/30">
@@ -24,10 +24,10 @@ export function AdminMenu({ pending = 0 }: { pending?: number }) {
               <Link href={href} aria-current={on ? "page" : undefined}
                 className={`flex min-h-11 items-center justify-center whitespace-nowrap uppercase text-xs font-bold tracking-wide ${on ? "bg-offwhite text-ink" : ""}`}>
                 {label}
-                {href === "/admin/requests" && pending > 0 && (
+                {((href === "/admin/requests" && pending > 0) || (href === "/admin/orders" && payments > 0)) && (
                   // Red is used only for this admin alert, never on the member site.
                   <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#C8102E] px-1 text-[11px] leading-none tracking-normal text-white tabular-nums">
-                    {pending}<span className="sr-only"> pending</span>
+                    {href === "/admin/orders" ? payments : pending}<span className="sr-only"> pending</span>
                   </span>
                 )}
               </Link>

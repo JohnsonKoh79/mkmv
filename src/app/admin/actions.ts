@@ -112,3 +112,9 @@ export async function saveGender(id: string, form: FormData) {
   if (v === "") await db.from("player").update({ gender: null }).eq("id", id);
   revalidatePath("/admin/setup");
 }
+
+export async function rejectProof(id: string) {
+  const { db } = await requireFounder();
+  await db.from("order").update({ proof_url: null, proof_at: null }).eq("id", id).eq("status", "preordered");
+  revalidatePath("/admin/orders");
+}
