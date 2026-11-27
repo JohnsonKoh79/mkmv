@@ -5,19 +5,23 @@
 const SITE = "https://www.mkmv.club";
 const FROM = "MKMV <noreply@mkmv.club>";
 
-export type Approval = { name: string | null; project: string; batch: number | null; starts: string | null };
+/** tokenHash makes the button sign the member in. Without it the button is a plain link. */
+export type Approval = { name: string | null; project: string; batch: number | null; starts: string | null; tokenHash?: string };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-export function approvalEmail({ name, project, batch, starts }: Approval) {
+export function approvalEmail({ name, project, batch, starts, tokenHash }: Approval) {
   const hello = name ? `${name}, your seat is saved.` : "Your seat is saved.";
   const where = batch ? `${project} · Batch ${batch}` : project;
   const first = starts ? `First Wednesday: ${starts}, 5am.` : "Date to be confirmed.";
-  const link = `${SITE}/move`;
+  const link = tokenHash ? `${SITE}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=email` : `${SITE}/move`;
+  const note = tokenHash
+    ? "The button signs you in. It works once, for a limited time, so don't forward this email. After that, sign in with this address."
+    : "Sign in with this address if you're asked.";
   const next = "Add your nickname and photo under Me. Then show up.";
 
   const subject = "You're in.";
-  const text = `${hello}\n\n${where}\n${first}\n\n${next}\n\nSee My Move: ${link}\n\nMake your move.`;
+  const text = `${hello}\n\n${where}\n${first}\n\n${next}\n\nSee My Move: ${link}\n${note}\n\nMake your move.`;
   const font = "font-family:Arial,Helvetica,sans-serif;";
   const html = `<!doctype html>
 <html lang="en">
@@ -44,9 +48,10 @@ export function approvalEmail({ name, project, batch, starts }: Approval) {
         <p style="margin:0 0 24px;font-size:16px;line-height:24px;">${esc(next)}</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr><td align="center" bgcolor="#10100F">
-            <a href="${link}" style="display:block;padding:18px 24px;${font}font-size:15px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#EAE4DE;text-decoration:none;">See My Move</a>
+            <a href="${esc(link)}" style="display:block;padding:18px 24px;${font}font-size:15px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#EAE4DE;text-decoration:none;">See My Move</a>
           </td></tr>
         </table>
+        <p style="margin:24px 0 0;font-size:13px;line-height:20px;">${esc(note)}</p>
       </td></tr>
       <tr><td bgcolor="#EAE4DE" style="padding:20px 28px;border-top:1px solid #10100F;${font}color:#10100F;font-size:12px;line-height:18px;">
         <strong style="letter-spacing:2px;text-transform:uppercase;">Make your move.</strong>

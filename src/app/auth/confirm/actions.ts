@@ -12,7 +12,8 @@ export async function confirmSignIn(form: FormData) {
   const { error } = token_hash
     ? await db.auth.verifyOtp({ type: "email", token_hash })
     : { error: new Error("missing token") };
-  if (error) redirect("/sign-in?error_code=link");
+  // A used or expired link tapped on a phone that is already signed in: just carry on.
+  if (error) redirect((await db.auth.getUser()).data.user ? "/move" : "/sign-in?error_code=link");
   await db.rpc("link_player");
   const store = await cookies();
   const next = safeNext(store.get("mkmv_next")?.value);

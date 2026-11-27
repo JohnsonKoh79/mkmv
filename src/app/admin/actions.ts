@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendApprovalEmail } from "@/lib/email";
 import { fmtDate } from "@/lib/format";
+import { oneTapToken } from "@/lib/one-tap";
 import { requireFounder } from "@/lib/founder";
 
 const txt = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -81,16 +82,20 @@ export async function approveRequest(id: string, form: FormData) {
 
 async function emailApproved(db: Awaited<ReturnType<typeof requireFounder>>["db"], id: string) {
   const { data } = await db.from("join_request")
-    .select("player:player_id(nickname, real_name, contact), project:project_id(title), batch:season_id(batch_number, start_date)")
+    .select("player:player_id(auth_user_id, nickname, real_name, contact), project:project_id(title), batch:season_id(batch_number, start_date)")
     .eq("id", id).maybeSingle();
-  const player = data?.player as unknown as { nickname: string | null; real_name: string | null; contact: string | null } | null;
-  if (!player?.contact?.includes("@")) return false;
+  const player = data?.player as unknown as { auth_user_id: string | null; nickname: string | null; real_name: string | null; contact: string | null } | null;
+  if (!player) return false;
+  const oneTap = player.auth_user_id ? await oneTapToken(player.auth_user_id) : null;
+  const to = oneTap?.email ?? player.contact;
+  if (!to?.includes("@")) return false;
   const batch = data?.batch as unknown as { batch_number: number | null; start_date: string | null } | null;
-  return sendApprovalEmail(player.contact, {
+  return sendApprovalEmail(to, {
     name: player.nickname ?? player.real_name?.split(" ")[0] ?? null,
     project: (data?.project as unknown as { title: string } | null)?.title ?? "MKMV",
     batch: batch?.batch_number ?? null,
     starts: batch?.start_date ? fmtDate(batch.start_date) : null,
+    tokenHash: oneTap?.tokenHash,
   });
 }
 
