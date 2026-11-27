@@ -1,6 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendApprovalEmail } from "@/lib/email";
+import { fmtDate } from "@/lib/format";
 import { requireFounder } from "@/lib/founder";
 
 const txt = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -72,8 +74,24 @@ export async function approveRequest(id: string, form: FormData) {
   const { db } = await requireFounder();
   const { error } = await db.rpc("approve_request", { p_request: id, p_referrer: txt(form, "referrer", 60) || null });
   if (error) redirect(`/admin/requests?error=${encodeURIComponent(error.message)}`);
+  const mailed = await emailApproved(db, id);
   revalidatePath("/admin/requests");
-  redirect("/admin/requests");
+  redirect(`/admin/requests?mail=${mailed ? "sent" : "failed"}`);
+}
+
+async function emailApproved(db: Awaited<ReturnType<typeof requireFounder>>["db"], id: string) {
+  const { data } = await db.from("join_request")
+    .select("player:player_id(nickname, real_name, contact), project:project_id(title), batch:season_id(batch_number, start_date)")
+    .eq("id", id).maybeSingle();
+  const player = data?.player as unknown as { nickname: string | null; real_name: string | null; contact: string | null } | null;
+  if (!player?.contact?.includes("@")) return false;
+  const batch = data?.batch as unknown as { batch_number: number | null; start_date: string | null } | null;
+  return sendApprovalEmail(player.contact, {
+    name: player.nickname ?? player.real_name?.split(" ")[0] ?? null,
+    project: (data?.project as unknown as { title: string } | null)?.title ?? "MKMV",
+    batch: batch?.batch_number ?? null,
+    starts: batch?.start_date ? fmtDate(batch.start_date) : null,
+  });
 }
 
 export async function decideRequest(id: string, decision: "waitlist_next_batch" | "waitlist_next_project" | "removed") {

@@ -12,10 +12,12 @@ const ERRORS: Record<string, string> = {
 };
 const age = (dob: string, today: string) => Number(today.slice(0, 4)) - Number(dob.slice(0, 4)) - (today.slice(5) < dob.slice(5) ? 1 : 0);
 
-async function Content({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+type Search = Promise<{ error?: string; mail?: string }>;
+
+async function Content({ searchParams }: { searchParams: Search }) {
   await connection();
   const { db } = await requireFounder();
-  const { error } = await searchParams;
+  const { error, mail } = await searchParams;
   const today = klToday();
   const [{ data }, { data: members }] = await Promise.all([
     db.from("join_request")
@@ -69,6 +71,8 @@ async function Content({ searchParams }: { searchParams: Promise<{ error?: strin
   return (
     <>
       {error && <p role="alert" className="border border-ink p-3">{ERRORS[error] ?? "That did not save. Go again."}</p>}
+      {mail === "sent" && <p role="status" className="border border-ink p-3">Approved. Their &quot;You&apos;re in&quot; email is sent.</p>}
+      {mail === "failed" && <p role="alert" className="border border-ink p-3 font-bold">Approved, but the email did not send. Message them yourself.</p>}
       <H>Pending ({pending.length})</H>
       {pending.length ? <ul className="space-y-2">{pending.map(card)}</ul> : <p>Nobody at the door.</p>}
       <H>Waitlist: next batch ({nextBatch.length})</H>
@@ -79,6 +83,6 @@ async function Content({ searchParams }: { searchParams: Promise<{ error?: strin
   );
 }
 
-export default function Requests({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default function Requests({ searchParams }: { searchParams: Search }) {
   return <AdminShell title="Requests"><Content searchParams={searchParams} /></AdminShell>;
 }
