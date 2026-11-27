@@ -85,8 +85,8 @@ export function MyMissions({ steps, level, finisher, orders, savedCut, fixedCut 
           return (
             <article key={s.id} className={`flex items-start gap-3 border bg-offwhite p-3 ${tone} ${state === "locked" ? "border-dashed" : ""}`}>
               <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden">
-                <Image src={kitImage(s, cut)} alt={reached ? rewardName(s) : "Locked piece"} width={184} height={184} sizes="92px"
-                  className={`h-full w-full object-contain ${!reached ? "opacity-90 brightness-0" : state === "held" ? "opacity-40" : ""}`} />
+                <Image src={kitImage(s, cut)} alt={rewardName(s)} width={184} height={184} sizes="92px"
+                  className="h-full w-full object-contain" />
                 {(state === "complete" || state === "ordered") && (
                   <span aria-hidden className={`absolute -left-2 -right-2 bottom-2 -rotate-[8deg] py-0.5 text-center text-[11px] font-extrabold uppercase tracking-[0.14em] text-offwhite ${fill}`}>Unlocked</span>
                 )}

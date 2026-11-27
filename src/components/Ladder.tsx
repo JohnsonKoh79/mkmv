@@ -10,7 +10,7 @@ function kitImage(product: string, ink: string): string | null {
   return `/kit/${piece}-${ink === "oxblood" ? "reserved" : "core"}${CUT[piece]}.png`;
 }
 
-/** Six pieces. Locked = solid silhouette. Held = dimmed. Every piece sits on off-white, so oxblood never meets black. */
+/** Six pieces, always shown in full so people see what they are working for. Locked and held are told apart by border and label. */
 export function Ladder({ steps, level, compact = false }: { steps: LadderStep[]; level?: number; compact?: boolean }) {
   if (compact) {
     // One short row per piece: easy to scan on a phone.
@@ -66,11 +66,11 @@ export function Ladder({ steps, level, compact = false }: { steps: LadderStep[];
               {src ? (
                 <Image
                   src={src}
-                  alt={state === "locked" ? `Locked piece, level ${s.level}` : `${s.product}, ${reserved ? "reserved" : "core"}`}
+                  alt={`${s.product}, ${reserved ? "reserved" : "core"}`}
                   width={627}
                   height={627}
                   sizes="(min-width: 640px) 33vw, 50vw"
-                  className={`h-full w-full object-contain ${state === "locked" ? "brightness-0 opacity-90" : state === "held" ? "opacity-40" : ""}`}
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <span className="flex h-full items-center justify-center font-display text-xl">{state === "locked" ? "?" : s.product}</span>

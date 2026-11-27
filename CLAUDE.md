@@ -26,3 +26,4 @@ Read `docs/MKMV_Website_Build_Prompt.md` in full before writing any code. It is 
 - Keep the existing database rules and row-level security.
 - Write "MKMV" and "Make your move." Never "make a move", "Make Moves" or "the 5am club". No registered-trademark symbol.
 - Mobile first. Logging a session takes two taps.
+- Owner decision, 27 Nov 2026: kit pictures are always shown in full, even when locked or held. No silhouettes or dimming (this overrides the briefs and mock-ups).

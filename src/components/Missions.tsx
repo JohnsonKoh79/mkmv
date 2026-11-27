@@ -43,8 +43,8 @@ export function Missions({ steps, signedIn, savedCut, fixedCut = false, locked =
             : "Complete it and you can buy this piece.";
           return (
             <article key={s.id} className={`flex items-start gap-3 border bg-offwhite p-3 ${tone} ${locked ? "border-dashed" : ""}`}>
-              <Image src={kitImage(s, cut)} alt={locked ? "Locked piece" : rewardName(s)} width={184} height={184} sizes="92px"
-                className={`h-[92px] w-[92px] shrink-0 object-contain ${locked ? "opacity-90 brightness-0" : ""}`} />
+              <Image src={kitImage(s, cut)} alt={rewardName(s)} width={184} height={184} sizes="92px"
+                className="h-[92px] w-[92px] shrink-0 object-contain" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="lbl !text-[10px]">{s.missionLabel}</p>
